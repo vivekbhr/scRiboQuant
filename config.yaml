@@ -1,18 +1,10 @@
 ## workflow parameters
-# file name extension
+# file name extension of input (raw) reads
 ext: '.fastq.gz'
-# The suffix added to reads
+# The suffix added to input (raw) reads
 reads: ["_R1","_R2"]
-# No. of reads to downsample (leave empty for no downsampling)
-downsample:
-# Trim the reads?
-trim: True
-# Additional optional passed to trimmer (default assumes nextSeq data with Illumina smallRNA barcodes)
-trimmerOptions: "-q 30 --trim-n --minimum-length 20"
 # List of cell barcodes
-barcode_list: '/hpc/hub_oudenaarden/group_references/cell_barcodes/maya_384NLA.bc'
-# path to BWA index (basename)
-bwa_index: '/hpc/hub_oudenaarden/vbhardwaj/annotations/hg38_gencode31_extra/BWAIndex/genome.fa'
+barcode_list:
 # Path to genome fasta file
 genome_fasta: '/hpc/hub_oudenaarden/vbhardwaj/annotations/hg38_gencode31_extra/genome_fasta/genome.fa'
 # Path to GTF file

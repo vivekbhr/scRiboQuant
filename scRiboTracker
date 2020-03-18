@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 
 __description__ = """
-single-cell TAPS analysis pipeline
+single-cell Ribo-Seq analysis pipeline
 usage example:
-    openTAPS -i input-dir -o output-dir -c config.yaml mm10
+    scRiboQuant -i input-dir -o output-dir -c config.yaml mm10
 """
 
 import argparse
@@ -41,7 +41,7 @@ def commonYAMLandLogs(baseDir, args, callingScript):
     # save to configs.yaml in outdir
     config = load_configfile(args.config)
     config.update(vars(args))  # This allows modifications of args after handling a user config file to still make it to the YAML given to snakemake!
-    write_configfile(os.path.join(args.outdir, 'openTAPS_config.yaml'), config)
+    write_configfile(os.path.join(args.outdir, 'scRiboQuant_config.yaml'), config)
 
     ## load cluster config
     cluster_config = load_configfile(os.path.join(baseDir, "cluster_config.yaml"))
@@ -55,7 +55,7 @@ def commonYAMLandLogs(baseDir, args, callingScript):
                                tempDir=args.tempDir,
                                latency_wait=cluster_config["latency_wait"],
                                snakemakeOptions=str(args.snakemakeOptions or ''),
-                               configFile=os.path.join(args.outdir, 'openTAPS_config.yaml')).split()
+                               configFile=os.path.join(args.outdir, 'scRiboQuant_config.yaml')).split()
 
     if args.verbose:
         snakemake_cmd.append("--printshellcmds")
@@ -80,7 +80,7 @@ def runAndCleanup(args, cmd):
         print("\n{}\n".format(cmd))
 
     # write log file
-    f = open(os.path.join(args.outdir, "openTAPS.log"), "w")
+    f = open(os.path.join(args.outdir, "scRiboQuant.log"), "w")
     f.write(" ".join(sys.argv) + "\n\n")
     f.write(cmd + "\n\n")
 
@@ -130,6 +130,13 @@ def parse_args(defaults=None):
                           type=str,
                           required=True)
 
+    parser.add_argument("-a", "--annot",
+                          dest="annotation",
+                          metavar="STR",
+                          help="Directory containing annotation and indices (created using 'prepareAnnotation' command)",
+                          type=str,
+                          required=True)
+
     parser.add_argument("-c", "--config",
                           dest="config",
                           metavar="STR",
@@ -142,40 +149,21 @@ def parse_args(defaults=None):
                           required=True,
                           help="output directory")
 
+    parser.add_argument("-d", "--downsample",
+                          dest="downsample",
+                          type=int,
+                          default=None,
+                          help="output directory")
+
     parser.add_argument("-t", "--tempDir",
                           dest="tempDir",
                           help="Directory to store temporary files. (default: '%(default)s')",
                           default='/tmp/')
 
-    parser.add_argument("-m", "--method",
-                          dest="method",
-                          help="protocol used. option: nla-taps, chic-taps or chic. (default: '%(default)s')",
-                          default='chic-taps')
-
     parser.add_argument("-q", "--minQ",
                           dest="min_mapq",
                           help="minimum mapping quality (filter to apply after mapping). (default: '%(default)s')",
                           default=10)
-
-    parser.add_argument("-cr", "--countRegions",
-                          dest="countRegions",
-                          help="Output a file with UMI counts per barcode in a specified region (see options). (default: '%(default)s')",
-                          choices=['genes', 'windows', 'bed', 'peaks', None],
-                          default=None)
-
-    parser.add_argument("-bs", "--binSize",
-                          dest="binSize",
-                          help="Size of the bins to count UMIs per barcode (used only if --countRegions 'windows' is used) (default: '%(default)s')",
-                          type=str,
-                          required=False,
-                          default=10000)
-
-    parser.add_argument("-b", "--bedFile",
-                          dest="bedFile",
-                          help="BED file to count regions in (used only if --countRegions 'bed' is used) (default: '%(default)s')",
-                          type=str,
-                          required=False,
-                          default=None)
 
     parser.add_argument("-s", "--snakemakeOptions",
                           dest="snakemakeOptions",
@@ -194,7 +182,7 @@ def parse_args(defaults=None):
     parser.add_argument("-cd", "--conda-dir",
                          dest="conda_dir",
                          default=get_current_condaEnv(),
-                         help="path to the conda directory where scRIA is installed (used only if --cluster is specified) (default: '%(default)s')")
+                         help="path to the conda directory where scRiboQuant is installed (used only if --cluster is specified) (default: '%(default)s')")
 
     parser.add_argument("-j", "--jobs",
                          dest="maxJobs",
@@ -222,10 +210,6 @@ def main():
     parser = parse_args()
     args = parser.parse_args()
     args.outdir = os.path.abspath(args.outdir)
-    # check if the bed file is given with --countRegions argument
-    if args.countRegions == "bed":
-        if not os.path.exists(args.bedFile) and os.path.getsize(args.bedFile) > 0:
-            exit("counting regions bed file absent/empty!!")
 
     # Handle YAML and log files
     snakemake_cmd = commonYAMLandLogs(baseDir, args, __file__)

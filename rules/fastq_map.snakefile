@@ -1,5 +1,5 @@
 ## optional downsampling
-if downsample:
+if downsample is not None:
     rule FASTQdownsample:
         input:
             r1 = indir+"/{sample}"+reads[0]+ext,
@@ -61,7 +61,7 @@ rule FastQC:
         untrimmed = "FASTQ/trimmed/{sample}_R1.fastq.gz",
         trimmed = "FASTQ/trimmed/{sample}_trimmed_R1.fastq.gz"
     output:
-        "QC/FastQC/{sample}{read}_fastqc.html"
+        "QC/FastQC/{sample}_{read}_fastqc.html"
     params:
         outdir = "QC/FastQC"
     log: "logs/FastQC.{sample}.out"
