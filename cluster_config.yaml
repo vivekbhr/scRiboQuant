@@ -4,5 +4,5 @@ latency_wait: 300
 cluster_logDir: cluster_logs
 __default__:
     memory: 20G
-bwa_map:
-    memory: 40G
+STAR:
+    memory: 60G

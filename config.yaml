@@ -4,7 +4,7 @@ ext: '.fastq.gz'
 # The suffix added to input (raw) reads
 reads: ["_R1","_R2"]
 # List of cell barcodes
-barcode_list:
+barcodes:
 # Path to genome fasta file
 genome_fasta: '/hpc/hub_oudenaarden/vbhardwaj/annotations/hg38_gencode31_extra/genome_fasta/genome.fa'
 # Path to GTF file

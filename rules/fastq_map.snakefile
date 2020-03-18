@@ -1,5 +1,19 @@
 ## optional downsampling
-if downsample is not None:
+if downsample is None:
+    rule FASTQlink:
+        input:
+            r1 = indir+"/{sample}"+reads[0]+ext,
+            r2 = indir+"/{sample}"+reads[1]+ext
+        output:
+            r1 = "FASTQ/{sample}_R1.fastq.gz",
+            r2 = "FASTQ/{sample}_R2.fastq.gz"
+        conda: CONDA_SHARED_ENV
+        shell:
+          """
+          ( [ -f {output.r1} ] || ln -s -r {input.r1} {output.r1} )
+          ( [ -f {output.r2} ] || ln -s -r {input.r2} {output.r2} )
+          """
+else:
     rule FASTQdownsample:
         input:
             r1 = indir+"/{sample}"+reads[0]+ext,
@@ -12,25 +26,10 @@ if downsample is not None:
         threads: 10
         conda: CONDA_SHARED_ENV
         shell:
-            """
-            seqtk sample -s 100 {input.r1} {params.num_reads} | pigz -p {threads} -9 > {output.r1}
-            seqtk sample -s 100 {input.r2} {params.num_reads} | pigz -p {threads} -9 > {output.r2}
-            """
-else:
-    rule FASTQlink:
-        input:
-            r1 = indir+"/{sample}"+reads[0]+ext,
-            r2 = indir+"/{sample}"+reads[1]+ext
-        output:
-            r1 = "FASTQ/{sample}_R1.fastq.gz",
-            r2 = "FASTQ/{sample}_R2.fastq.gz"
-        conda: CONDA_SHARED_ENV
-        shell:
-            """
-            ( [ -f {output.r1} ] || ln -s -r {input.r1} {output.r1} );
-            ( [ -f {output.r2} ] || ln -s -r {input.r2} {output.r2} )
-            """
-
+          """
+          seqtk sample -s 100 {input.r1} {params.num_reads} | pigz -p {threads} -9 > {output.r1}
+          seqtk sample -s 100 {input.r2} {params.num_reads} | pigz -p {threads} -9 > {output.r2}
+          """
 
 # preprocess per-sample fastqs for UMI and Cell barcode
 rule preprocess:
@@ -41,9 +40,9 @@ rule preprocess:
         r1 = temp("FASTQ/trimmed/{sample}_R1.fastq.gz"),
         r2 = temp("FASTQ/trimmed/{sample}_R2.fastq.gz")
     params:
-        trimFq=os.path.join(workflow.basedir, "tools/trimFastq/trimFastq"),
-      shell:
-          "{params.trimFq} {input.r1} {input.r1} {output.r1} {output.r2}"
+        trimFq = os.path.join(workflow.basedir, "tools/trimFastq/trimFastq")
+    shell:
+        "{params.trimFq} {input.r1} {input.r1} {output.r1} {output.r2}"
 
 rule cutadapt:
     input: "FASTQ/trimmed/{sample}_R1.fastq.gz"
@@ -61,7 +60,8 @@ rule FastQC:
         untrimmed = "FASTQ/trimmed/{sample}_R1.fastq.gz",
         trimmed = "FASTQ/trimmed/{sample}_trimmed_R1.fastq.gz"
     output:
-        "QC/FastQC/{sample}_{read}_fastqc.html"
+        untrimmed = "QC/FastQC/{sample}_R1_fastqc.html",
+        trimmed = "QC/FastQC/{sample}_trimmed_R1_fastqc.html"
     params:
         outdir = "QC/FastQC"
     log: "logs/FastQC.{sample}.out"
@@ -72,10 +72,10 @@ rule FastQC:
 
 rule STARsolo:
     input:
-        r1="FASTQ/trimmed/{sample}_trimmed_R1.fastq.gz",
-        r2="FASTQ/trimmed/{sample}_R2.fastq.gz",
-        annot=annotation+"/genes.gtf",
-        barcodes=barcodes_txt
+        r1 = "FASTQ/trimmed/{sample}_trimmed_R1.fastq.gz",
+        r2 = "FASTQ/trimmed/{sample}_R2.fastq.gz",
+        gtf = annotation+"/genes.gtf",
+        bc = barcodes
     output:
         bam = "STAR/{sample}.sorted.bam",
         txbam = "STAR/{sample}.tx.sorted.bam",
@@ -83,7 +83,7 @@ rule STARsolo:
         filtered_counts = "STAR/{sample}/{sample}.Solo.out/Gene/filtered/matrix.mtx",
         filtered_bc = "STAR/{sample}/{sample}.Solo.out/Gene/filtered/barcodes.tsv"
     params:
-        index = star_index,
+        index = annotation+"/STARindex",
         prefix = "STAR/{sample}/{sample}.",
         sample_dir = "STAR/{sample}"
     threads: 20
@@ -108,7 +108,7 @@ rule STARsolo:
           --soloUMIlen 10 \
           --soloCBstart 1 \
           --soloCBlen 10 \
-          --soloCBwhitelist {input.barcodes_txt} \
+          --soloCBwhitelist {input.bc} \
           --soloBarcodeReadLength 0 \
           --soloCBmatchWLtype 1MM \
           --soloStrand Forward \

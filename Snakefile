@@ -33,7 +33,7 @@ def get_sample_names(infiles, ext, reads):
 # update envs
 globals().update(set_condaEnv())
 # load config file
-globals().update(load_configfile(workflow.overwrite_configfile))
+globals().update(load_configfile(workflow.overwrite_configfiles[0]))
 
 ## load samples
 infiles = sorted(glob.glob(os.path.join(indir, '*'+ext)))
@@ -50,7 +50,7 @@ include: os.path.join(workflow.basedir, "rules", "QC.snakefile")
 
 ### main rule ##################################################################
 ################################################################################
-localrules: FASTQ1, FASTQ2
+
 rule all:
     input:
         expand("FASTQ/{sample}_{read}.fastq.gz", sample = samples, read = ['R1', 'R2']),
