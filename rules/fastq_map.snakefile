@@ -115,7 +115,7 @@ rule STARsolo:
           --soloUMIdedup Exact \
           --soloUMIfiltering MultiGeneUMI \
           --quantMode TranscriptomeSAM \
-          --quanTranscriptomeBam Singleend
+          --quantTranscriptomeBan Singleend
         ## clean
         ln -rs {params.prefix}Aligned.sortedByCoord.out.bam {output.bam}
         ln -rs {params.prefix}Aligned.toTranscriptome.out.bam  {output.txbam}
