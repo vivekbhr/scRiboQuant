@@ -42,7 +42,7 @@ rule preprocess:
     params:
         trimFq = os.path.join(workflow.basedir, "tools/trimFastq/trimFastq")
     shell:
-        "{params.trimFq} {input.r1} {input.r1} {output.r1} {output.r2}"
+        "{params.trimFq} {input.r1} {input.r2} {output.r1} {output.r2}"
 
 rule cutadapt:
     input: "FASTQ/trimmed/{sample}_R1.fastq.gz"
