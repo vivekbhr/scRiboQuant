@@ -51,8 +51,8 @@ rule cutadapt:
     threads: 8
     conda: CONDA_SHARED_ENV
     shell:
-        "cutadapt -j {threads} \
-        -e 0.1 -q 30 -O 3 --trim-n -a TGGAATTCTCGG \
+        "cutadapt -j {threads} --minimum-length 18 --maximum-length 50 \
+        -e 0.1 -q 20 -O 3 --trim-n -a TGGAATTCTCGG \
         -o {output} {input} > {log} 2>&1 "
 
 rule FastQC:
