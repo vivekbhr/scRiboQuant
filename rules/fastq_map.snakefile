@@ -122,7 +122,7 @@ rule STARsolo:
         rm -rf $MYTEMP
         """
 
-rule idxBam:
+rule idxBamSTAR:
     input: "STAR/{sample}.sorted.bam"
     output: "STAR/{sample}.sorted.bam.bai"
     threads: 1
@@ -146,5 +146,27 @@ rule CDSmap:
     log: "logs/bowtie2_CDS.{sample}.log"
     threads: 10
     conda: CONDA_SHARED_ENV
-    shell: "bowtie2 --end-to-end -p {threads} -x {params.idx} -U {input.fastq} |\
-            samtools sort -m 1G -@ {threads} -O BAM -o {output} 2> {log}"
+    shell: "bowtie2 --end-to-end -p {threads} -x {params.idx} -U {input.fastq} 2> {log} |\
+            samtools sort -m 1G -@ {threads} -O BAM -o {output} 2> /dev/null"
+
+rule idxBamBowtie:
+    input: "Bowtie2_CDS/{sample}.bam"
+    output: "Bowtie2_CDS/{sample}.bam.bai"
+    threads: 1
+    conda: CONDA_SHARED_ENV
+    shell: "samtools index {input}"
+
+rule bamCoverage:
+    input:
+        bam = "STAR/{sample}.sorted.bam",
+        bai = "STAR/{sample}.sorted.bam.bai"
+    output: "bigWigs/{sample}_wholeGenome.cpm.bw"
+    params:
+        ignore = "chrX chrY chrM"
+    log: "logs/bamCoverage.{sample}.log"
+    threads: 10
+    conda: CONDA_SHARED_ENV
+    shell:
+        "bamCoverage --normalizeUsing CPM -p {threads} \
+        -ignore {params.ignore}  \
+        -b {input.bam} -o {output} > {log} 2>&1"
