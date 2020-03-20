@@ -146,5 +146,5 @@ rule CDSmap:
     log: "logs/bowtie2_CDS.{sample}.log"
     threads: 10
     conda: CONDA_SHARED_ENV
-    shell: "bowtie2 --end-to-end -@ {threads} -x {params.idx} -U {input.fastq} |\
+    shell: "bowtie2 --end-to-end -p {threads} -x {params.idx} -U {input.fastq} |\
             samtools sort -m 1G -@ {threads} -O BAM -o {output} 2> {log}"
