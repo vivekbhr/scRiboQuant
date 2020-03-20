@@ -59,6 +59,7 @@ rule all:
         expand("STAR/{sample}.sorted.bam", sample = samples),
         expand("STAR/{sample}.tx.sorted.bam", sample = samples),
         expand("STAR/{sample}/{sample}.Solo.out/Gene/filtered/barcodes.tsv", sample = samples),
+        expand("Bowtie2_CDS/{sample}.bam", sample = samples),
         "QC/multiqc_report.html"
 
 

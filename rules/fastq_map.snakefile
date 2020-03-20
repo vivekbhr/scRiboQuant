@@ -37,8 +37,8 @@ rule preprocess:
         r1 = "FASTQ/{sample}_R1.fastq.gz",
         r2 = "FASTQ/{sample}_R2.fastq.gz"
     output:
-        r1 = temp("FASTQ/trimmed/{sample}_R1.fastq.gz"),
-        r2 = temp("FASTQ/trimmed/{sample}_R2.fastq.gz")
+        r1 = "FASTQ/trimmed/{sample}_R1.fastq.gz", #temp() later
+        r2 = "FASTQ/trimmed/{sample}_R2.fastq.gz"
     params:
         trimFq = os.path.join(workflow.basedir, "tools/trimFastq/trimFastq")
     shell:
@@ -78,7 +78,7 @@ rule STARsolo:
         bc = barcodes
     output:
         bam = "STAR/{sample}.sorted.bam",
-        txbam = "STAR/{sample}.tx.sorted.bam",
+        txbam = "STAR/{sample}/{sample}.Aligned.toTranscriptome.out.bam",
         raw_counts = "STAR/{sample}/{sample}.Solo.out/Gene/raw/matrix.mtx",
         filtered_counts = "STAR/{sample}/{sample}.Solo.out/Gene/filtered/matrix.mtx",
         filtered_bc = "STAR/{sample}/{sample}.Solo.out/Gene/filtered/barcodes.tsv"
@@ -87,6 +87,7 @@ rule STARsolo:
         prefix = "STAR/{sample}/{sample}.",
         sample_dir = "STAR/{sample}"
     threads: 20
+    conda: CONDA_SHARED_ENV
     shell:
         """
         ## set
@@ -118,6 +119,32 @@ rule STARsolo:
           --quantTranscriptomeBan Singleend
         ## clean
         ln -rs {params.prefix}Aligned.sortedByCoord.out.bam {output.bam}
-        ln -rs {params.prefix}Aligned.toTranscriptome.out.bam  {output.txbam}
         rm -rf $MYTEMP
         """
+
+rule idxBam:
+    input: "STAR/{sample}.sorted.bam"
+    output: "STAR/{sample}.sorted.bam.bai"
+    threads: 1
+    conda: CONDA_SHARED_ENV
+    shell: "samtools index {input}"
+
+rule Bam2Fq:
+    input: "STAR/{sample}.sorted.bam"
+    output: temp("STAR/{sample}.fastq.gz")
+    threads: 5
+    conda: CONDA_SHARED_ENV
+    shell: "samtools fastq -@ {threads} {input} | gzip - > {output}"
+
+rule CDSmap:
+    input:
+        fastq = "STAR/{sample}.fastq.gz",
+        index = annotation+"/Bowtie2index/selected_CDS_51b.rev.2.bt2",
+    output: "Bowtie2_CDS/{sample}.bam"
+    params:
+        idx = annotation+"Bowtie2index/selected_CDS_51b"
+    log: "logs/bowtie2_CDS.{sample}.log"
+    threads: 10
+    conda: CONDA_SHARED_ENV
+    shell: "bowtie2 --end-to-end -@ {threads} -x {params.idx} -U {input.fastq} |\
+            samtools sort -m 1G -@ {threads} -O BAM -o {output} 2> {log}"
