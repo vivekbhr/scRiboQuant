@@ -142,7 +142,7 @@ rule CDSmap:
         index = annotation+"/Bowtie2index/selected_CDS_51b.rev.2.bt2",
     output: "Bowtie2_CDS/{sample}.bam"
     params:
-        idx = annotation+"Bowtie2index/selected_CDS_51b"
+        idx = annotation+"/Bowtie2index/selected_CDS_51b"
     log: "logs/bowtie2_CDS.{sample}.log"
     threads: 10
     conda: CONDA_SHARED_ENV
