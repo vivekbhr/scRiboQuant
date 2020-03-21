@@ -130,7 +130,7 @@ rule idxBamSTAR:
     shell: "samtools index {input}"
 
 rule Bam2Fq:
-    input: "STAR/{sample}.sorted.bam"
+    input: "STAR/{sample}/{sample}.Aligned.toTranscriptome.out.bam"
     output: temp("STAR/{sample}.fastq.gz")
     threads: 5
     conda: CONDA_SHARED_ENV
