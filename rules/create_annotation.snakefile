@@ -14,13 +14,6 @@ STAR --runThreadN 10 \
 --sjdbGTFfile $gtf \
 --sjdbOverhang 50
 
-umi_tools dedup --mapping-quality 20 \
---per-cell --umi-tag=UB --cell-tag=CB --extract-umi-method=tag \
---method unique --spliced-is-unique \
---output-stats=${prefix}.stats \
--I ${bam} -L ${prefix}.log > ${prefix}.bam
-
-
 ### some follow up of solo counts
 
 dir.create("~/Desktop/riboseq_test")

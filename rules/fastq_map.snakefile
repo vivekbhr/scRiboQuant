@@ -190,8 +190,12 @@ rule umi_dedup:
     threads: 1
     conda: CONDA_SHARED_ENV
     shell:
-        "umi_tools dedup --mapping-quality {params.mapq} \
+        """
+        umi_tools dedup --mapping-quality {params.mapq} \
         --per-cell --per-gene --per-contig \
         --method unique \
         --output-stats=QC/umi_dedup/{params.sample} \
-        -I {input.bam} -L {log.out} > {output.bam} 2> {log.err}"
+        -I {input.bam} -L {log.out} | awk -v sample={params.sample} \
+        'OFS="\\t" {{ if($0 ~ "^@") {{print $0}} else \
+        {{ split($1,a,"_"); print $0, "SM:Z:"sample"_"a[2], "CB:Z:"a[2], "UB:Z:"a[3], "MI:Z:"a[2]a[3] }} }}' > {output.bam} 2> {log.err}
+        """
