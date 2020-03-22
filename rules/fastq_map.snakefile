@@ -88,6 +88,7 @@ rule STARsolo:
         index = annotation+"/STARindex",
         prefix = "STAR/{sample}/{sample}.",
         sample_dir = "STAR/{sample}"
+    log: "logs/STAR.{sample}.log"
     threads: 20
     conda: CONDA_SHARED_ENV
     shell:
@@ -118,7 +119,7 @@ rule STARsolo:
           --soloUMIdedup Exact \
           --soloUMIfiltering MultiGeneUMI \
           --quantMode TranscriptomeSAM \
-          --quantTranscriptomeBan Singleend
+          --quantTranscriptomeBan Singleend > {log} 2>&1
         ## clean
         ln -rs {params.prefix}Aligned.sortedByCoord.out.bam {output.bam}
         rm -rf $MYTEMP
@@ -165,12 +166,14 @@ rule bamCoverage:
     output: "bigWigs/{sample}_wholeGenome.cpm.bw"
     params:
         ignore = "chrX chrY chrM",
-        offset = 12
+        offset = '12 -12'
     log: "logs/bamCoverage.{sample}.log"
     threads: 10
     conda: CONDA_SHARED_ENV
     shell:
-        "bamCoverage --normalizeUsing CPM -bs 1 -p {threads} \
+        "bamCoverage --normalizeUsing CPM -bs 12 \
+        --minFragmentLength 18 --maxFragmentLength 36 \
+        --minMappingQuality 255 -p {threads} \
         --Offset {params.offset} -ignore {params.ignore}  \
         -b {input.bam} -o {output} > {log} 2>&1"
 
