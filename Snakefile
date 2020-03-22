@@ -61,6 +61,7 @@ rule all:
         expand("STAR/{sample}/{sample}.Solo.out/Gene/filtered/barcodes.tsv", sample = samples),
         expand("bigWigs/{sample}_wholeGenome.cpm.bw", sample = samples),
         expand("Bowtie2_CDS/{sample}.bam", sample = samples),
+        expand("Bowtie2_CDS/{sample}.dedup.bam", sample = samples),
         "QC/multiqc_report.html"
 
 

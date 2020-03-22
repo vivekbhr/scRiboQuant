@@ -162,11 +162,34 @@ rule bamCoverage:
         bai = "STAR/{sample}.sorted.bam.bai"
     output: "bigWigs/{sample}_wholeGenome.cpm.bw"
     params:
-        ignore = "chrX chrY chrM"
+        ignore = "chrX chrY chrM",
+        offset = 12
     log: "logs/bamCoverage.{sample}.log"
     threads: 10
     conda: CONDA_SHARED_ENV
     shell:
         "bamCoverage --normalizeUsing CPM -p {threads} \
-        -ignore {params.ignore}  \
+        --Offset {params.offset} -ignore {params.ignore}  \
         -b {input.bam} -o {output} > {log} 2>&1"
+
+rule umi_dedup:
+    input:
+        bam = "Bowtie2_CDS/{sample}.bam",
+        idx = "Bowtie2_CDS/{sample}.bam.bai"
+    output:
+        bam = "Bowtie2_CDS/{sample}.dedup.bam",
+        stats = "QC/umi_dedup/{sample}_per_umi.tsv"
+    params:
+        mapq = 10,
+        sample = "{sample}"
+    log:
+        out = "logs/umi_dedup_{sample}.out",
+        err = "logs/umi_dedup_{sample}.err"
+    threads: 1
+    conda: CONDA_SHARED_ENV
+    shell:
+        "umi_tools dedup --mapping-quality {params.mapq} \
+        --per-cell --per-gene --per-contig \
+        --method unique \
+        --output-stats=QC/umi_dedup/{params.sample} \
+        -I {input.bam} -L {log.out} > {output.bam} 2> {log.err}"
