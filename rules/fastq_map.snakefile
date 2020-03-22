@@ -63,12 +63,14 @@ rule FastQC:
         untrimmed = "QC/FastQC/{sample}_R1_fastqc.html",
         trimmed = "QC/FastQC/{sample}_trimmed_R1_fastqc.html"
     params:
-        outdir = "QC/FastQC"
+        outdir = "QC/FastQC",
+        tmp = tempDir
     log: "logs/FastQC.{sample}.out"
     threads: 2
     conda: CONDA_SHARED_ENV
     shell:
-        "fastqc -t {threads} -o {params.outdir} {input.untrimmed} {input.trimmed} > {log} 2>&1"
+        "fastqc -d {params.tmp} -t {threads} -o {params.outdir} \
+        {input.untrimmed} {input.trimmed} > {log} 2>&1"
 
 rule STARsolo:
     input:
@@ -168,7 +170,7 @@ rule bamCoverage:
     threads: 10
     conda: CONDA_SHARED_ENV
     shell:
-        "bamCoverage --normalizeUsing CPM -p {threads} \
+        "bamCoverage --normalizeUsing CPM -bs 1 -p {threads} \
         --Offset {params.offset} -ignore {params.ignore}  \
         -b {input.bam} -o {output} > {log} 2>&1"
 
