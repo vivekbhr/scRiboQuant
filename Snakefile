@@ -61,6 +61,7 @@ rule all:
         expand("bigWigs/{sample}_wholeGenome.cpm.bw", sample = samples),
         expand("Bowtie2_CDS/{sample}.bam", sample = samples),
         expand("Bowtie2_CDS/{sample}.dedup.bam", sample = samples),
+        expand("counts/{sample}.CDScounts_per_barcode.tsv", sample = samples),
         "QC/multiqc_report.html"
 
 
