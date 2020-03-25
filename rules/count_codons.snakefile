@@ -1,8 +1,17 @@
+rule prep_saf:
+    input: annotation+"/selected_CDS_51b_cdsAsGenes.bed"
+    output: temp("CDS.saf")
+    threads: 1
+    conda: CONDA_SHARED_ENV
+    shell: """
+        awk 'OFS="\\t" {{ print $4, $1, $2, $3, $6 }} {input} > {output}'
+        """
+
 rule count_regions:
     input:
         bam = "Bowtie2_CDS/{sample}.bam",
         idx = "Bowtie2_CDS/{sample}.bam.bai",
-        bed = annotation+"/selected_CDS_51b_cdsAsGenes.bed"
+        saf = "CDS.saf"
     output:
         counts = "counts/{sample}.CDScounts_bulk.tsv",
         bam = temp("counts/{sample}.bam.featureCounts.bam")
@@ -12,7 +21,7 @@ rule count_regions:
     threads: 10
     conda: CONDA_SHARED_ENV
     shell:
-        "featureCounts -T {threads} -a {input.regions} {params.filetype} \
+        "featureCounts -T {threads} -a {input.saf} {params.filetype} \
         -R BAM -s 1 --read2pos 3 -o {output.counts} {input.bam} > {log} 2>&1"
 
 rule fcount_sort:
