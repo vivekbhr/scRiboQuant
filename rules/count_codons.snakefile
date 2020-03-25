@@ -4,7 +4,7 @@ rule prep_saf:
     threads: 1
     conda: CONDA_SHARED_ENV
     shell: """
-        awk 'OFS="\\t" {{ print $4, $1, $2, $3, $6 }} {input} > {output}'
+        awk 'OFS="\\t" {{ print $4, $1, $2, $3, $6 }}' {input} > {output}
         """
 
 rule count_regions:
