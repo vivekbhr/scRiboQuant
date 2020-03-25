@@ -42,6 +42,7 @@ samples = get_sample_names(infiles,ext,reads)
 ### include modules of other snakefiles ########################################
 ################################################################################
 include: os.path.join(workflow.basedir, "rules", "fastq_map.snakefile")
+include: os.path.join(workflow.basedir, "rules", "count_codons.snakefile")
 include: os.path.join(workflow.basedir, "rules", "QC.snakefile")
 
 ### conditional/optional rules #################################################
