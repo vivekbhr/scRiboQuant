@@ -204,7 +204,7 @@ rule umi_dedup:
         """
 
 rule idxBamDedup:
-    input: "Bowtie2_CDS/dedup/{sample}.dedup.bam"
+    input: rules.umi_dedup.output.bam
     output: "Bowtie2_CDS/dedup/{sample}.dedup.bam.bai"
     threads: 1
     conda: CONDA_SHARED_ENV
