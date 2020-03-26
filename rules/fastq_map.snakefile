@@ -182,7 +182,7 @@ rule umi_dedup:
         bam = "Bowtie2_CDS/{sample}.bam",
         idx = "Bowtie2_CDS/{sample}.bam.bai"
     output:
-        bam = "Bowtie2_CDS/dedup/{sample}.dedup.bam",
+        bam = "Bowtie2_CDS/{sample}.dedup.bam",
         stats = "QC/umi_dedup/{sample}_per_umi.tsv"
     params:
         mapq = 10,
@@ -204,8 +204,8 @@ rule umi_dedup:
         """
 
 rule idxBamDedup:
-    input: "Bowtie2_CDS/dedup/{sample}.dedup.bam"
-    output: "Bowtie2_CDS/dedup/{sample}.dedup.bam.bai"
+    input: "Bowtie2_CDS/{sample}.dedup.bam"
+    output: "Bowtie2_CDS/{sample}.dedup.bam.bai"
     threads: 1
     conda: CONDA_SHARED_ENV
     shell: "samtools index {input}"
