@@ -14,7 +14,7 @@ rule count_regions:
         saf = "CDS.saf"
     output:
         counts = "counts/{sample}.CDScounts_bulk.tsv",
-        bam = temp("counts/{sample}.bam.featureCounts.bam")
+        bam = temp("counts/{sample}.dedup.bam.featureCounts.bam")
     params:
         filetype = "-F SAF"
     log: "logs/featurecounts_{sample}_bulk.err"
@@ -25,7 +25,7 @@ rule count_regions:
         -R BAM -s 1 --read2pos 3 -o {output.counts} {input.bam} > {log} 2>&1"
 
 rule fcount_sort:
-    input: "counts/{sample}.bam.featureCounts.bam"
+    input: "counts/{sample}.dedup.bam.featureCounts.bam"
     output: temp("counts/{sample}.featureCounts.bam")
     threads: 10
     conda: CONDA_SHARED_ENV
