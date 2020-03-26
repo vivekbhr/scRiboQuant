@@ -132,6 +132,9 @@ rule idxBamSTAR:
     conda: CONDA_SHARED_ENV
     shell: "samtools index {input}"
 
+
+## re-mapping transcriptome-aligned BAM to CDS +-51b
+
 rule Bam2Fq:
     input: "STAR/{sample}/{sample}.Aligned.toTranscriptome.out.bam"
     output: temp("STAR/{sample}.fastq.gz")
@@ -158,24 +161,6 @@ rule idxBamBowtie:
     threads: 1
     conda: CONDA_SHARED_ENV
     shell: "samtools index {input}"
-
-rule bamCoverage:
-    input:
-        bam = "STAR/{sample}.sorted.bam",
-        bai = "STAR/{sample}.sorted.bam.bai"
-    output: "bigWigs/{sample}_wholeGenome.cpm.bw"
-    params:
-        ignore = "chrX chrY chrM",
-        offset = '12 -12'
-    log: "logs/bamCoverage.{sample}.log"
-    threads: 10
-    conda: CONDA_SHARED_ENV
-    shell:
-        "bamCoverage --normalizeUsing CPM -bs 12 \
-        --minFragmentLength 18 --maxFragmentLength 36 \
-        --minMappingQuality 255 -p {threads} \
-        --Offset {params.offset} -ignore {params.ignore}  \
-        -b {input.bam} -o {output} > {log} 2>&1"
 
 rule umi_dedup:
     input:
@@ -212,3 +197,20 @@ rule idxBamDedup:
     threads: 1
     conda: CONDA_SHARED_ENV
     shell: "samtools index {input}"
+
+rule bamCoverage:
+    input:
+        bam = "dedup/{sample}.dedup.bam",
+        bai = "dedup/{sample}.dedup.bam.bai"
+    output: "bigWigs/{sample}_CDS_Offset12.bw"
+    params:
+        ignore = "chrX chrY chrM",
+        norm = '--normalizeUsing CPM',
+    log: "logs/bamCoverage.{sample}.log"
+    threads: 10
+    conda: CONDA_SHARED_ENV
+    shell:
+        "bamCoverage -bs 1 --Offset -12 \
+        --minMappingQuality 10 -p {threads} \
+        -ignore {params.ignore}  \
+        -b {input.bam} -o {output} > {log} 2>&1"

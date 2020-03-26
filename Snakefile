@@ -59,7 +59,7 @@ rule all:
         expand("QC/FastQC/{sample}_{read}_fastqc.html", sample = samples, read=['R1', 'trimmed_R1']),
         expand("STAR/{sample}.sorted.bam", sample = samples),
         expand("STAR/{sample}/{sample}.Solo.out/Gene/filtered/barcodes.tsv", sample = samples),
-        expand("bigWigs/{sample}_wholeGenome.cpm.bw", sample = samples),
+        expand("bigWigs/{sample}_CDS_Offset12.bw", sample = samples),
         expand("Bowtie2_CDS/{sample}.bam", sample = samples),
         expand("Bowtie2_CDS/{sample}.bam.bai", sample = samples),
         expand("dedup/{sample}.dedup.bam", sample = samples),

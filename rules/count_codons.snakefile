@@ -9,12 +9,12 @@ rule prep_saf:
 
 rule count_regions:
     input:
-        bam = "dedup/{sample}.dedup.bam",
-        idx = "dedup/{sample}.dedup.bam.bai",
+        bam = "Bowtie2_CDS/{sample}.bam",
+        idx = "Bowtie2_CDS/{sample}.bam.bai",
         saf = "CDS.saf"
     output:
         counts = "counts/{sample}.CDScounts_bulk.tsv",
-        bam = temp("counts/{sample}.dedup.bam.featureCounts.bam")
+        bam = temp("counts/{sample}.bam.featureCounts.bam")
     params:
         filetype = "-F SAF"
     log: "logs/featurecounts_{sample}_bulk.err"
@@ -25,7 +25,7 @@ rule count_regions:
         -R BAM -s 1 --read2pos 3 -o {output.counts} {input.bam} > {log} 2>&1"
 
 rule fcount_sort:
-    input: "counts/{sample}.dedup.bam.featureCounts.bam"
+    input: "counts/{sample}.bam.featureCounts.bam"
     output: temp("counts/{sample}.featureCounts.bam")
     threads: 10
     conda: CONDA_SHARED_ENV
@@ -52,7 +52,7 @@ rule count_regions_cells:
     conda: CONDA_SHARED_ENV
     shell:
         "umi_tools count --mapping-quality {params.mapq} \
-        --per-gene --gene-tag=XT --assigned-status-tag=XS \
+        --per-gene --gene-tag=XT --wide-format-cell-counts \
         --cell-tag=CB --umi-tag=UB --extract-umi-method=tag \
         --per-cell --method=percentile -I {input.bam} -S {output} \
         -v 4 --log2stderr --log={log}"
