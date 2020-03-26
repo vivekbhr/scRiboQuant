@@ -9,8 +9,8 @@ rule prep_saf:
 
 rule count_regions:
     input:
-        bam = rules.umi_dedup.output.bam,
-        idx = rules.idxBamDedup.output,
+        bam = "dedup/{sample}.dedup.bam",
+        idx = "dedup/{sample}.dedup.bam.bai",
         saf = "CDS.saf"
     output:
         counts = "counts/{sample}.CDScounts_bulk.tsv",
