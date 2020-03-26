@@ -9,8 +9,8 @@ rule prep_saf:
 
 rule count_regions:
     input:
-        bam = "Bowtie2_CDS/{sample}.dedup.bam",
-        idx = "Bowtie2_CDS/{sample}.dedup.bam.bai",
+        bam = "Bowtie2_CDS/dedup/{sample}.dedup.bam",
+        idx = "Bowtie2_CDS/dedup/{sample}.dedup.bam.bai",
         saf = "CDS.saf"
     output:
         counts = "counts/{sample}.CDScounts_bulk.tsv",
