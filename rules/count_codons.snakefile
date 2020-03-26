@@ -9,8 +9,8 @@ rule prep_saf:
 
 rule count_regions:
     input:
-        bam = "Bowtie2_CDS/{sample}.bam",
-        idx = "Bowtie2_CDS/{sample}.bam.bai",
+        bam = "Bowtie2_CDS/{sample}.dedup.bam",
+        idx = "Bowtie2_CDS/{sample}.dedup.bam.bai",
         saf = "CDS.saf"
     output:
         counts = "counts/{sample}.CDScounts_bulk.tsv",
@@ -53,5 +53,6 @@ rule count_regions_cells:
     shell:
         "umi_tools count --mapping-quality {params.mapq} \
         --per-gene --gene-tag=XT --assigned-status-tag=XS \
+        --cell-tag=CB --umi-tag=UB --extract-umi-method=tag \
         --per-cell --method=percentile -I {input.bam} -S {output} \
         -v 4 --log2stderr --log={log}"

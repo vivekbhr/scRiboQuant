@@ -202,3 +202,10 @@ rule umi_dedup:
         'OFS="\\t" {{ if($0 ~ "^@") {{print $0}} else \
         {{ split($1,a,"_"); print $0, "SM:Z:"sample"_"a[2], "CB:Z:"a[2], "UB:Z:"a[3], "MI:Z:"a[2]a[3] }} }}' > {output.bam} 2> {log.err}
         """
+
+rule idxBamDedup:
+    input: "Bowtie2_CDS/{sample}.dedup.bam"
+    output: "Bowtie2_CDS/{sample}.dedup.bam.bai"
+    threads: 1
+    conda: CONDA_SHARED_ENV
+    shell: "samtools index {input}"
