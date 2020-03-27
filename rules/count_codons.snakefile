@@ -53,6 +53,6 @@ rule count_regions_cells:
     shell:
         "umi_tools count --mapping-quality {params.mapq} \
         --per-gene --gene-tag=XT --wide-format-cell-counts \
-        --cell-tag=CB --umi-tag=UB --extract-umi-method=tag \
         --per-cell --method=percentile -I {input.bam} -S {output} \
         -v 4 --log2stderr --log={log}"
+#        --cell-tag=CB --umi-tag=UB --extract-umi-method=tag \
