@@ -148,12 +148,13 @@ rule BamFilter:
         txbed = annotation+"/selected_CDS.bed",
         tmpfile = tempDir+"/{sample}",
         mapq = 255
+    log: "logs/BamFilter_{sample}.log"
     threads: 5
     conda: CONDA_SHARED_ENV
     shell:
-        "samtools view -q {params.mapq} -F 4 -L {params.txbed} {input} | \
+        "samtools view -q {params.mapq} -F 4 -L {params.txbed} {input} 2> {params.log} | \
          samtools sort -m 1G -n -T {params.tmpfile} -O BAM -@ {threads} -o {output} - \
-         2> /dev/null"
+         2> {params.log}"
 
 rule CDSmap:
     input:
