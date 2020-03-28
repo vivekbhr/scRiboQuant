@@ -152,7 +152,7 @@ rule BamFilter:
     threads: 5
     conda: CONDA_SHARED_ENV
     shell:
-        "samtools view -q {params.mapq} -F 4 -L {params.txbed} {input} 2> {params.log} | \
+        "samtools view -h -q {params.mapq} -F 4 -L {params.txbed} {input} 2> {params.log} | \
          samtools sort -m 1G -n -T {params.tmpfile} -O BAM -@ {threads} -o {output} - \
          2> {params.log}"
 
