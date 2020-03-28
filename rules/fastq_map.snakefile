@@ -214,9 +214,9 @@ rule idxBamDedup:
 
 rule bamCoverage:
     input:
-        bam = "dedup/{sample}.dedup.bam",
-        bai = "dedup/{sample}.dedup.bam.bai"
-    output: "bigWigs/{sample}_CDS_Offset12.bw"
+        bam = "STAR/{sample}.sorted.bam",
+        bai = "STAR/{sample}.sorted.bam.bai"
+    output: "bigWigs/{sample}_wholeGenome_Offset12.bw"
     params:
         ignore = "chrX chrY chrM",
         norm = '--normalizeUsing CPM',
@@ -224,7 +224,7 @@ rule bamCoverage:
     threads: 10
     conda: CONDA_SHARED_ENV
     shell:
-        "bamCoverage -bs 1 --Offset -12 \
-        --minMappingQuality 10 -p {threads} \
+        "bamCoverage -bs 1 --Offset -12 {params.norm} \
+        --minMappingQuality 255 -p {threads} \
         -ignore {params.ignore}  \
         -b {input.bam} -o {output} > {log} 2>&1"
