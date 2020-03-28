@@ -72,6 +72,7 @@ rule FastQC:
         "fastqc -d {params.tmp} -t {threads} -o {params.outdir} \
         {input.untrimmed} {input.trimmed} > {log} 2>&1"
 
+#        txbam = "STAR/{sample}/{sample}.Aligned.toTranscriptome.out.bam",
 rule STARsolo:
     input:
         r1 = "FASTQ/trimmed/{sample}_trimmed_R1.fastq.gz",
@@ -80,7 +81,6 @@ rule STARsolo:
         bc = barcodes
     output:
         bam = "STAR/{sample}.sorted.bam",
-        txbam = "STAR/{sample}/{sample}.Aligned.toTranscriptome.out.bam",
         raw_counts = "STAR/{sample}/{sample}.Solo.out/Gene/raw/matrix.mtx",
         filtered_counts = "STAR/{sample}/{sample}.Solo.out/Gene/filtered/matrix.mtx",
         filtered_bc = "STAR/{sample}/{sample}.Solo.out/Gene/filtered/barcodes.tsv"
@@ -100,7 +100,7 @@ rule STARsolo:
         STAR --runThreadN {threads} \
           --sjdbOverhang 50 \
           --outSAMtype BAM SortedByCoordinate \
-          --outSAMattributes NH HI AS nM CB UB \
+          --outSAMattributes NH HI nM AS CR UR CB UB GX GN sS sQ sM
           --sjdbGTFfile {input.gtf} \
           --genomeDir {params.index} \
           --readFilesIn  {input.r1} {input.r2} \
@@ -114,12 +114,12 @@ rule STARsolo:
           --soloCBlen 10 \
           --soloCBwhitelist {input.bc} \
           --soloBarcodeReadLength 0 \
-          --soloCBmatchWLtype 1MM \
+          --soloCBmatchWLtype 1MM_multi_pseudocounts \
           --soloStrand Forward \
           --soloUMIdedup Exact \
-          --soloUMIfiltering MultiGeneUMI \
-          --quantMode TranscriptomeSAM \
-          --quantTranscriptomeBan Singleend > {log} 2>&1
+          --soloUMIfiltering MultiGeneUMI > {log} 2>&1
+        ##--quantMode TranscriptomeSAM \
+        ##--quantTranscriptomeBan Singleend
         ## clean
         ln -rs {params.prefix}Aligned.sortedByCoord.out.bam {output.bam}
         rm -rf $MYTEMP
@@ -133,27 +133,41 @@ rule idxBamSTAR:
     shell: "samtools index {input}"
 
 
-## re-mapping transcriptome-aligned BAM to CDS +-51b
+## re-map the reads mapping to tx
+#rule Bam2Fq:
+#    input: "STAR/{sample}/{sample}.Aligned.toTranscriptome.out.bam"
+#    output: temp("STAR/{sample}.fastq.gz")
+#    threads: 5
+#    conda: CONDA_SHARED_ENV
+#    shell: "samtools fastq -@ {threads} {input} | gzip - > {output}"
 
-rule Bam2Fq:
-    input: "STAR/{sample}/{sample}.Aligned.toTranscriptome.out.bam"
-    output: temp("STAR/{sample}.fastq.gz")
+rule BamFilter:
+    input: "STAR/{sample}.sorted.bam"
+    output: temp("STAR/{sample}_tx.bam")
+    params:
+        txbed = annotation+"/selected_CDS.bed",
+        tmpfile = tempDir+"/{sample}",
+        mapq = 255
     threads: 5
     conda: CONDA_SHARED_ENV
-    shell: "samtools fastq -@ {threads} {input} | gzip - > {output}"
+    shell:
+        "samtools view -q {params.mapq} -F 4 -L {params.txbed} {input} | \
+         samtools sort -m 1G -n -T {params.tmpfile} -O BAM -@ {threads} -o {output} - \
+         2> /dev/null"
 
 rule CDSmap:
     input:
-        fastq = "STAR/{sample}.fastq.gz",
+        bam = "STAR/{sample}_tx.bam", #"STAR/{sample}.fastq.gz",
         index = annotation+"/Bowtie2index/selected_CDS_51b.rev.2.bt2",
     output: "Bowtie2_CDS/{sample}.bam"
     params:
-        idx = annotation+"/Bowtie2index/selected_CDS_51b"
+        idx = annotation+"/Bowtie2index/selected_CDS_51b",
+        tmpfile = tempDir+"/{sample}"
     log: "logs/bowtie2_CDS.{sample}.log"
     threads: 10
     conda: CONDA_SHARED_ENV
-    shell: "bowtie2 --end-to-end -p {threads} -x {params.idx} -U {input.fastq} 2> {log} |\
-            samtools sort -m 1G -@ {threads} -O BAM -o {output} 2> /dev/null"
+    shell: "bowtie2 --end-to-end --preserve-tags -p {threads} -x {params.idx} -b {input.bam} 2> {log} |\
+            samtools sort -m 1G -T {params.tmpfile} -@ {threads} -O BAM -o {output} 2> /dev/null"
 
 rule idxBamBowtie:
     input: "Bowtie2_CDS/{sample}.bam"
