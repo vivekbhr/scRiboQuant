@@ -154,7 +154,7 @@ rule BamFilter:
     shell:
         """
         samtools view -h -q {params.mapq} -F 4 -L {params.txbed} {input} 2> {log} | \
-        samtools fastq -@ {threads} -T "UB","CB" - > {output} 2>> {log}
+        samtools fastq -@ {threads} -T "UB","CB" - | tr "\t" "_" > {output} 2>> {log}
         """
 
 rule CDSmap:
@@ -170,9 +170,9 @@ rule CDSmap:
     conda: CONDA_SHARED_ENV
     shell:
         """
-        bowtie2 --sam-no-qname-trunc --end-to-end -p {threads} -x {params.idx} -U {input.fq} 2> {log} | \
+        bowtie2 --end-to-end -p {threads} -x {params.idx} -U {input.fq} 2> {log} | \
         awk 'OFS="\\t" {{ if($0 ~ "^@") {{print $0}} else \
-        {{ umi=$2; cb=$3; $2=""; $3=""; print $0, umi, cb }} }}' | \
+        {{ split($1,bc,"_"); print $0, bc[2], bc[3] }} }}' | \
         samtools sort -m 1G -T {params.tmpfile} -@ {threads} -O BAM -o {output} 2>> {log}
         """
 
