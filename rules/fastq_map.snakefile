@@ -143,7 +143,7 @@ rule idxBamSTAR:
 
 rule BamFilter:
     input: "STAR/{sample}.sorted.bam"
-    output: temp("STAR/{sample}_tx.bam")
+    output: temp("STAR/{sample}_tx.fastq")
     params:
         txbed = annotation+"/selected_CDS.bed",
         tmpfile = tempDir+"/{sample}",
@@ -153,12 +153,11 @@ rule BamFilter:
     conda: CONDA_SHARED_ENV
     shell:
         "samtools view -h -q {params.mapq} -F 4 -L {params.txbed} {input} 2> {log} | \
-         samtools sort -m 1G -n -T {params.tmpfile} -O BAM -@ {threads} -o {output} - \
-         2>> {log}"
+         samtools fastq -@ {threads} -T "UB","CB" - > {output} 2>> {log}"
 
 rule CDSmap:
     input:
-        bam = "STAR/{sample}_tx.bam", #"STAR/{sample}.fastq.gz",
+        fq = "STAR/{sample}_tx.fastq",
         index = annotation+"/Bowtie2index/selected_CDS_51b.rev.2.bt2",
     output: "Bowtie2_CDS/{sample}.bam"
     params:
@@ -167,8 +166,13 @@ rule CDSmap:
     log: "logs/bowtie2_CDS.{sample}.log"
     threads: 10
     conda: CONDA_SHARED_ENV
-    shell: "bowtie2 --end-to-end --preserve-tags -p {threads} -x {params.idx} -b {input.bam} 2> {log} |\
-            samtools sort -m 1G -T {params.tmpfile} -@ {threads} -O BAM -o {output} 2> /dev/null"
+    shell:
+        """
+        bowtie2 --end-to-end -p {threads} -x {params.idx} -U {input.bam} 2> {log} | \
+        awk 'OFS="\\t" {{ if($0 ~ "^@") {{print $0}} else \
+        {{ umi=$2; cb=$3; $2=""; $3=""; print $0, umi, cb }} }}' | \
+        samtools sort -m 1G -T {params.tmpfile} -@ {threads} -O BAM -o {output} 2>> {log}
+        """
 
 rule idxBamBowtie:
     input: "Bowtie2_CDS/{sample}.bam"
