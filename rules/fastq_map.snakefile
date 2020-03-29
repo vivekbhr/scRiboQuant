@@ -170,7 +170,7 @@ rule CDSmap:
     conda: CONDA_SHARED_ENV
     shell:
         """
-        bowtie2 --end-to-end -p {threads} -x {params.idx} -U {input.bam} 2> {log} | \
+        bowtie2 --end-to-end -p {threads} -x {params.idx} -U {input.fq} 2> {log} | \
         awk 'OFS="\\t" {{ if($0 ~ "^@") {{print $0}} else \
         {{ umi=$2; cb=$3; $2=""; $3=""; print $0, umi, cb }} }}' | \
         samtools sort -m 1G -T {params.tmpfile} -@ {threads} -O BAM -o {output} 2>> {log}
