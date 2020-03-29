@@ -110,8 +110,8 @@ int main(int argc, char *argv[]) //main
     trim_seq(trimseq,sequence);
 
     // header = read name + _BC_UMI + comment
-    gzprintf(fpout,"@%s_%s_%s %s\n", name, barcode, umiseq, comment);
-    gzprintf(fptout,"@%s_%s_%s %s\n", tname, barcode, umiseq, tcomment);
+    gzprintf(fpout,"@%s %s\n", name, comment);//_%s_%s barcode, umiseq,
+    gzprintf(fptout,"@%s %s\n", tname, tcomment);//_%s_%s barcode, umiseq, 
 
     gzprintf(fpout,"%s\n", trimseq);//trimmed seq for R1
     gzprintf(fptout,"%s%s\n", tsequence, umiseq);//normal seq for R2 + UMI from R1

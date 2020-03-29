@@ -100,7 +100,7 @@ rule STARsolo:
         STAR --runThreadN {threads} \
           --sjdbOverhang 50 \
           --outSAMtype BAM SortedByCoordinate \
-          --outSAMattributes NH HI nM AS CR UR CB UB GX GN sS sQ sM
+          --outSAMattributes NH HI nM AS CR UR CB UB GX GN sS sQ sM \
           --sjdbGTFfile {input.gtf} \
           --genomeDir {params.index} \
           --readFilesIn  {input.r1} {input.r2} \
