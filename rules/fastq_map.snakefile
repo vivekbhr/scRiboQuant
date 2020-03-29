@@ -152,8 +152,10 @@ rule BamFilter:
     threads: 5
     conda: CONDA_SHARED_ENV
     shell:
-        "samtools view -h -q {params.mapq} -F 4 -L {params.txbed} {input} 2> {log} | \
-         samtools fastq -@ {threads} -T "UB","CB" - > {output} 2>> {log}"
+        """
+        samtools view -h -q {params.mapq} -F 4 -L {params.txbed} {input} 2> {log} | \
+        samtools fastq -@ {threads} -T "UB","CB" - > {output} 2>> {log}
+        """
 
 rule CDSmap:
     input:
