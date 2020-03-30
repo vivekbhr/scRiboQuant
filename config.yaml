@@ -3,11 +3,13 @@
 ext: '.fastq.gz'
 # The suffix added to input (raw) reads
 reads: ["_R1","_R2"]
-# List of cell barcodes
-barcodes:
-# Path to genome fasta file
+# Path to a gencode-format genome fasta file
 genome_fasta: '/hpc/hub_oudenaarden/vbhardwaj/annotations/hg38_gencode31_extra/genome_fasta/genome.fa'
-# Path to GTF file
+# Path to a gencode-format GTF file
 genome_gtf: '/hpc/hub_oudenaarden/vbhardwaj/annotations/hg38_gencode31_extra/annotation/genes.gtf'
-# minimum mapq threshold to extract signal from
-min_mapq:
+# Path to bed files with masked regions (eg. : tRNA-positions.bed)
+mask_bed:
+# Path to the fasta file to append to the genome (eg.: ERCC, mature tRNA sequence etc)
+append_fasta:
+# Tsv file with list of cell barcodes (col-1 = barcode, col-2...N = other annotation)
+barcodes:
