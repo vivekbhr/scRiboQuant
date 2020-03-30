@@ -132,6 +132,22 @@ rule idxBamSTAR:
     conda: CONDA_SHARED_ENV
     shell: "samtools index {input}"
 
+rule bamCoverage:
+    input:
+        bam = "STAR/{sample}.sorted.bam",
+        bai = "STAR/{sample}.sorted.bam.bai"
+    output: "bigWigs/{sample}_wholeGenome_Offset12.bw"
+    params:
+        ignore = "chrX chrY chrM",
+        norm = '--normalizeUsing CPM',
+    log: "logs/bamCoverage.{sample}.log"
+    threads: 10
+    conda: CONDA_SHARED_ENV
+    shell:
+        "bamCoverage -bs 1 --Offset -12 {params.norm} \
+        --minMappingQuality 255 -p {threads} \
+        -ignore {params.ignore}  \
+        -b {input.bam} -o {output} > {log} 2>&1"
 
 ## re-map the reads mapping to tx
 #rule Bam2Fq:
@@ -172,10 +188,10 @@ rule CDSmap:
     shell:
         """
         bowtie2 --end-to-end -p {threads} -x {params.idx} -U {input.fq} 2> {log} | \
-        awk 'OFS="\\t" {{ if($0 ~ "^@") {{print $0}} else \
-        {{ split($1,bc,"_"); print $0, bc[2], bc[3] }} }}' | \
         samtools sort -m 1G -T {params.tmpfile} -@ {threads} -O BAM -o {output} 2>> {log}
         """
+#        awk 'OFS="\\t" {{ if($0 ~ "^@") {{print $0}} else \
+#        {{ split($1,bc,"_"); print $0, bc[2], bc[3] }} }}' | \
 
 rule idxBamBowtie:
     input: "Bowtie2_CDS/{sample}.bam"
@@ -219,20 +235,3 @@ rule idxBamDedup:
     threads: 1
     conda: CONDA_SHARED_ENV
     shell: "samtools index {input}"
-
-rule bamCoverage:
-    input:
-        bam = "STAR/{sample}.sorted.bam",
-        bai = "STAR/{sample}.sorted.bam.bai"
-    output: "bigWigs/{sample}_wholeGenome_Offset12.bw"
-    params:
-        ignore = "chrX chrY chrM",
-        norm = '--normalizeUsing CPM',
-    log: "logs/bamCoverage.{sample}.log"
-    threads: 10
-    conda: CONDA_SHARED_ENV
-    shell:
-        "bamCoverage -bs 1 --Offset -12 {params.norm} \
-        --minMappingQuality 255 -p {threads} \
-        -ignore {params.ignore}  \
-        -b {input.bam} -o {output} > {log} 2>&1"
