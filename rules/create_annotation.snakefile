@@ -38,7 +38,7 @@ rule filterGTF:
     conda: CONDA_SHARED_ENV
     shell:
         """
-        awk '$2 == "HAVANA" {{ print $0 }}' $genes_gtf | \
+        awk '$2 == "HAVANA" {{ print $0 }}' {input} | \
         grep 'appris_principal' | grep 'transcript_type "protein_coding"' > {output}
         """
 
