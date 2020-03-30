@@ -47,11 +47,11 @@ include: os.path.join(workflow.basedir, "rules", "QC.snakefile")
 
 ### conditional/optional rules #################################################
 ################################################################################
-if prep:
+if prepareAnnotation:
     include: os.path.join(workflow.basedir, "rules", "create_annotation.snakefile")
 
-def prep_annotation(prep):
-    if prep:
+def prep_annotation():
+    if prepareAnnotation:
         out = ["annotation/genome.fa", "annotation/gtf_annotation_table.txt",
               "annotation/selected_CDS.bed", "annotation/selected_CDS_annotation.bed",
               "annotation/STARindex/Genome", "annotation/Bowtie2index/selected_CDS_extended.2.bt2"]

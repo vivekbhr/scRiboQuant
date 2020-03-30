@@ -77,7 +77,7 @@ rule STARsolo:
     input:
         r1 = "FASTQ/trimmed/{sample}_trimmed_R1.fastq.gz",
         r2 = "FASTQ/trimmed/{sample}_R2.fastq.gz",
-        gtf = annotation+"/genes.gtf",
+        gtf = genome_gtf,
         bc = barcodes
     output:
         bam = "STAR/{sample}.sorted.bam",
@@ -85,7 +85,7 @@ rule STARsolo:
         filtered_counts = "STAR/{sample}/{sample}.Solo.out/Gene/filtered/matrix.mtx",
         filtered_bc = "STAR/{sample}/{sample}.Solo.out/Gene/filtered/barcodes.tsv"
     params:
-        index = annotation+"/STARindex",
+        index = "annotation/STARindex",
         prefix = "STAR/{sample}/{sample}.",
         sample_dir = "STAR/{sample}"
     log: "logs/STAR.{sample}.log"
@@ -161,7 +161,7 @@ rule BamFilter:
     input: "STAR/{sample}.sorted.bam"
     output: "STAR/{sample}_tx.fastq"
     params:
-        txbed = annotation+"/selected_CDS.bed",
+        txbed = "annotation/selected_CDS.bed",
         tmpfile = tempDir+"/{sample}",
         mapq = 255
     log: "logs/BamFilter_{sample}.log"
@@ -177,10 +177,10 @@ rule BamFilter:
 rule CDSmap:
     input:
         fq = "STAR/{sample}_tx.fastq",
-        index = annotation+"/Bowtie2index/selected_CDS_51b.rev.2.bt2",
+        index = "annotation/Bowtie2index/selected_CDS_51b.rev.2.bt2",
     output: "Bowtie2_CDS/{sample}.bam"
     params:
-        idx = annotation+"/Bowtie2index/selected_CDS_51b",
+        idx = "annotation/Bowtie2index/selected_CDS_51b",
         tmpfile = tempDir+"/{sample}"
     log: "logs/bowtie2_CDS.{sample}.log"
     threads: 10

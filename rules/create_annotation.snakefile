@@ -12,7 +12,7 @@ rule maskFasta:
 rule appendFasta:
     input:
         fa = "annotation/genome_masked.fa",
-        addFa = append_fasta
+        addfa = append_fasta
     output: "annotation/genome.fa"
     threads: 1
     conda: CONDA_SHARED_ENV
@@ -46,7 +46,7 @@ rule prepCDSbed:
     input: "annotation/transcripts_filtered.gtf"
     output:
         bed = "annotation/selected_CDS.bed",
-        annotation = "annotation/selected_CDS_annotation.bed"
+        annot = "annotation/selected_CDS_annotation.bed"
     params:
         rscript = os.path.join(workflow.basedir, "tools", "prepareCDS.R")
     log: "logs/prepCDSbed.log"

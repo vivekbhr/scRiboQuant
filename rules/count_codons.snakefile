@@ -1,5 +1,5 @@
 rule prep_saf:
-    input: annotation+"/selected_CDS_annotation.bed"
+    input: "annotation/selected_CDS_annotation.bed"
     output: temp("CDS.saf")
     threads: 1
     conda: CONDA_SHARED_ENV
