@@ -11,14 +11,13 @@ rule maskFasta:
 
 rule appendFasta:
     input:
-        fa = lambda wildcards: "annotation/genome_tRNA_masked.fa" if maskFasta else genome_fasta,
+        fa = "annotation/genome_masked.fa",
         addFa = append_fasta
     output: "annotation/genome.fa"
     threads: 1
     conda: CONDA_SHARED_ENV
     shell:
         "cat {input.fa} {input.addfa} > {output}"
-
 
 ### prepare annotation
 rule gtfTable:
@@ -32,17 +31,43 @@ rule gtfTable:
         sed "1i\Geneid\tGeneSymbol\tChrom\tClass" > {output}
         """
 
-rule prepCDS:
+rule filterGTF:
     input: genome_gtf
+    output: temp("annotation/transcripts_filtered.gtf")
+    threads: 1
+    conda: CONDA_SHARED_ENV
+    shell:
+        """
+        awk '$2 == "HAVANA" {{ print $0 }}' $genes_gtf | \
+        grep 'appris_principal' | grep 'transcript_type "protein_coding"' > {output}
+        """
+
+rule prepCDSbed:
+    input: "annotation/transcripts_filtered.gtf"
     output:
         bed = "annotation/selected_CDS.bed",
         annotation = "annotation/selected_CDS_annotation.bed"
     params:
         rscript = os.path.join(workflow.basedir, "tools", "prepareCDS.R")
+    log: "logs/prepCDSbed.log"
     threads: 1
     conda: CONDA_SHARED_ENV
     shell:
         "Rscript {params.rscript} {input} {output.bed} {output.annot} 2> {log} 2>&1"
+
+rule prepCDSfasta:
+    input:
+        bed = "annotation/selected_CDS.bed",
+        fasta = "annotation/genome.fa"
+    output: "annotation/selected_CDS_extended.fa"
+    params:
+        extend = 51 #CDSextendLength
+    log: "logs/prepCDSfasta.log"
+    threads: 1
+    conda: CONDA_SHARED_ENV
+    shell:
+        "gffread -P -J -M -W -E -T --w-add {params.extend} -w {output} \
+        -g {input.fasta} --in-bed {input.bed} 2> {log} 2>&1"
 
 ## prepare indicies
 rule STARindex:

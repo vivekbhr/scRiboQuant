@@ -47,13 +47,24 @@ include: os.path.join(workflow.basedir, "rules", "QC.snakefile")
 
 ### conditional/optional rules #################################################
 ################################################################################
+if prep:
+    include: os.path.join(workflow.basedir, "rules", "create_annotation.snakefile")
 
+def prep_annotation(prep):
+    if prep:
+        out = ["annotation/genome.fa", "annotation/gtf_annotation_table.txt",
+              "annotation/selected_CDS.bed", "annotation/selected_CDS_annotation.bed",
+              "annotation/STARindex/Genome", "annotation/Bowtie2index/selected_CDS_extended.2.bt2"]
+    else:
+        out = []
+    return(out)
 
 ### main rule ##################################################################
 ################################################################################
 
 rule all:
     input:
+        prep_annotation(),
         expand("FASTQ/{sample}_{read}.fastq.gz", sample = samples, read = ['R1', 'R2']),
         expand("FASTQ/trimmed/{sample}_trimmed_R1.fastq.gz", sample = samples),
         expand("QC/FastQC/{sample}_{read}_fastqc.html", sample = samples, read=['R1', 'trimmed_R1']),
