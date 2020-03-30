@@ -54,7 +54,7 @@ def prep_annotation():
     if prepareAnnotation:
         out = ["annotation/genome.fa", "annotation/gtf_annotation_table.txt",
               "annotation/selected_CDS.bed", "annotation/selected_CDS_annotation.bed",
-              "annotation/STARindex/Genome", "annotation/Bowtie2index/selected_CDS_extended.2.bt2"]
+              "annotation/STARindex/Genome", "annotation/Bowtie2index/selected_CDS_extended.rev.2.bt2"]
     else:
         out = []
     return(out)
