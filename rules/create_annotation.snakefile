@@ -1,11 +1,3 @@
-gtf=/hpc/hub_oudenaarden/vbhardwaj/annotations/hg38_gencode31_extra/annotation/genes.gtf
-idx=../annotation/STARindex/
-barcodes=../whitelist.txt
-r1=../fastq_reformatted/MAV-RPFv4-HEK293T_R1.fastq.gz
-r2=../fastq_reformatted/MAV-RPFv4-HEK293T_R2.fastq.gz
-prefix=RPFv4_
-fa=
-
 ## generate genome
 rule maskFasta:
     input:
@@ -40,19 +32,17 @@ rule gtfTable:
         sed "1i\Geneid\tGeneSymbol\tChrom\tClass" > {output}
         """
 
-rule gtfTable:
+rule prepCDS:
     input: genome_gtf
     output:
         bed = "annotation/selected_CDS.bed",
         annotation = "annotation/selected_CDS_annotation.bed"
     params:
-        rscript = os.path.join(workflow.basedir, "tools", "prep_annotation.R"),
-        outPrefix = "annotation/selected_CDS"
+        rscript = os.path.join(workflow.basedir, "tools", "prepareCDS.R")
     threads: 1
     conda: CONDA_SHARED_ENV
     shell:
-        "Rscript {params.rscript} {input} {params.outPrefix} 2> {log} 2>&1"
-
+        "Rscript {params.rscript} {input} {output.bed} {output.annot} 2> {log} 2>&1"
 
 ## prepare indicies
 rule STARindex:
