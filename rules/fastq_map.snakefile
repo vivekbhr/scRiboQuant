@@ -170,8 +170,8 @@ rule BamFilter:
     shell:
         """
         samtools view -h -q {params.mapq} -F 4 -L {params.txbed} {input} 2> {log} | \
-        samtools fastq -@ {threads} -T "UB","CB" - | \
-        awk -v RS="@" '{{ gsub("UB:Z:", "", $2); gsub("CB:Z:", "", $3); print "@"$1"_"$2"_"$3, $4, $5, $6 }}' | awk 'OFS="\\n" {{ if (NF == 4) {{ print $1, $2, $3, $4}} }}' > {output} 2>> {log}
+        samtools fastq -@ {threads} -T "CB","UB" - | \
+        awk -v RS="@" '{{ gsub("CB:Z:", "", $2);  gsub("UB:Z:", "", $3); print "@"$1"_"$2"_"$3, $4, $5, $6 }}' | awk 'OFS="\\n" {{ if (NF == 4) {{ print $1, $2, $3, $4}} }}' > {output} 2>> {log}
         """
 
 rule CDSmap:

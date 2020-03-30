@@ -47,12 +47,14 @@ rule count_regions_cells:
     output: "counts/{sample}.CDScounts_per_barcode.tsv"
     params:
         mapq = 10
-    log: "logs/umi_counts_{sample}.CDScounts.err"
+    log:
+        out="logs/umi_counts_{sample}.CDScounts.out",
+        err="logs/umi_counts_{sample}.CDScounts.err"
     threads: 1
     conda: CONDA_SHARED_ENV
     shell:
         "umi_tools count --mapping-quality {params.mapq} \
         --per-gene --gene-tag=XT --wide-format-cell-counts \
         --per-cell --method=percentile -I {input.bam} -S {output} \
-        -v 4 --log2stderr --log={log}"
+        -v 4 --log2stderr --log={log.out} 2> {log.err}"
 #        --cell-tag=CB --umi-tag=UB --extract-umi-method=tag \
