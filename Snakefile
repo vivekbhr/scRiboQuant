@@ -42,13 +42,13 @@ samples = get_sample_names(infiles,ext,reads)
 ### include modules of other snakefiles ########################################
 ################################################################################
 include: os.path.join(workflow.basedir, "rules", "fastq_map.snakefile")
+if prepareAnnotation:
+    include: os.path.join(workflow.basedir, "rules", "create_annotation.snakefile")
 include: os.path.join(workflow.basedir, "rules", "count_codons.snakefile")
 include: os.path.join(workflow.basedir, "rules", "QC.snakefile")
 
 ### conditional/optional rules #################################################
 ################################################################################
-if prepareAnnotation:
-    include: os.path.join(workflow.basedir, "rules", "create_annotation.snakefile")
 
 def prep_annotation():
     if prepareAnnotation:
