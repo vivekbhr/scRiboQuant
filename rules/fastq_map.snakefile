@@ -143,7 +143,7 @@ rule idxBamSTAR:
 
 rule BamFilter:
     input: "STAR/{sample}.sorted.bam"
-    output: temp("STAR/{sample}_tx.fastq")
+    output: "STAR/{sample}_tx.fastq"
     params:
         txbed = annotation+"/selected_CDS.bed",
         tmpfile = tempDir+"/{sample}",
