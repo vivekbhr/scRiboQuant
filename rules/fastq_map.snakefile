@@ -177,10 +177,10 @@ rule BamFilter:
 rule CDSmap:
     input:
         fq = "STAR/{sample}_tx.fastq",
-        index = "annotation/Bowtie2index/selected_CDS_51b.rev.2.bt2",
+        index = "annotation/Bowtie2index/selected_CDS_extended.rev.2.bt2",
     output: "Bowtie2_CDS/{sample}.bam"
     params:
-        idx = "annotation/Bowtie2index/selected_CDS_51b",
+        idx = "annotation/Bowtie2index/selected_CDS_extended",
         tmpfile = tempDir+"/{sample}"
     log: "logs/bowtie2_CDS.{sample}.log"
     threads: 10
