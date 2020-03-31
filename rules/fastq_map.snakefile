@@ -75,6 +75,7 @@ rule FastQC:
 #        txbam = "STAR/{sample}/{sample}.Aligned.toTranscriptome.out.bam",
 rule STARsolo:
     input:
+        idx = "annotation/STARindex/Genome",
         r1 = "FASTQ/trimmed/{sample}_trimmed_R1.fastq.gz",
         r2 = "FASTQ/trimmed/{sample}_R2.fastq.gz",
         bc = barcodes
@@ -156,7 +157,6 @@ rule BamFilter:
         bed = "annotation/selected_CDS_exons.bed"
     output: "STAR/{sample}_tx.fastq"
     params:
-        tmpfile = tempDir+"/{sample}",
         mapq = 255
     log: "logs/BamFilter_{sample}.log"
     threads: 5
@@ -165,7 +165,9 @@ rule BamFilter:
         """
         samtools view -h -q {params.mapq} -F 4 -L {input.bed} {input} 2> {log} | \
         samtools fastq -@ {threads} -T "CR","UR" - | \
-        awk -v RS="@" '{{ gsub("CR:Z:", "", $2);  gsub("UR:Z:", "", $3); print "@"$1"_"$2"_"$3, $4, $5, $6 }}' | awk 'OFS="\\n" {{ if (NF == 4) {{ print $1, $2, $3, $4}} }}' > {output} 2>> {log}
+        awk -v RS="@" '{{ gsub("CR:Z:", "", $2);  gsub("UR:Z:", "", $3); \
+        print "@"$1"_"$2"_"$3, $4, $5, $6 }}' | \
+        awk 'OFS="\\n" {{ if (NF == 4) {{ print $1, $2, $3, $4}} }}' > {output} 2>> {log}
         """
 
 rule CDSmap:
