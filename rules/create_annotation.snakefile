@@ -79,6 +79,7 @@ rule STARindex:
         sidx = "annotation/STARindex/SAindex"
     params:
         outdir = "annotation/STARindex"
+    log: "logs/STARindex.log"
     threads: 10
     conda: CONDA_SHARED_ENV
     shell:
@@ -96,6 +97,7 @@ rule Bowtie2index:
         rev = "annotation/Bowtie2index/selected_CDS_extended.rev.2.bt2"
     params:
         outdir = "annotation/Bowtie2index"
+    log: "logs/Bowtie2index.log"
     threads: 5
     conda: CONDA_SHARED_ENV
     shell:
