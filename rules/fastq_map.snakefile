@@ -163,7 +163,7 @@ rule BamFilter:
     conda: CONDA_SHARED_ENV
     shell:
         """
-        samtools view -h -q {params.mapq} -F 4 -L {input.bed} {input} 2> {log} | \
+        samtools view -h -q {params.mapq} -F 4 -L {input.bed} {input.bam} 2> {log} | \
         samtools fastq -@ {threads} -T "CR","UR" - | \
         awk -v RS="@" '{{ gsub("CR:Z:", "", $2);  gsub("UR:Z:", "", $3); \
         print "@"$1"_"$2"_"$3, $4, $5, $6 }}' | \
