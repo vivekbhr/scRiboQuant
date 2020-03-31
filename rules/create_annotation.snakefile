@@ -46,14 +46,15 @@ rule prepCDSbed:
     input: "annotation/transcripts_filtered.gtf"
     output:
         bed = "annotation/selected_CDS.bed",
-        annot = "annotation/selected_CDS_annotation.bed"
+        annot = "annotation/selected_CDS_annotation.bed",
+        exons = "annotation/selected_CDS_exons.bed"
     params:
         rscript = os.path.join(workflow.basedir, "tools", "prepareCDS.R")
     log: "logs/prepCDSbed.log"
     threads: 1
     conda: CONDA_SHARED_ENV
     shell:
-        "Rscript {params.rscript} {input} {output.bed} {output.annot} > {log} 2>&1"
+        "Rscript {params.rscript} {input} {output.bed} {output.annot} {output.exons} > {log} 2>&1"
 
 rule prepCDSfasta:
     input:
