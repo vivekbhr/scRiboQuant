@@ -149,14 +149,6 @@ rule bamCoverage:
         -ignore {params.ignore}  \
         -b {input.bam} -o {output} > {log} 2>&1"
 
-## re-map the reads mapping to tx
-#rule Bam2Fq:
-#    input: "STAR/{sample}/{sample}.Aligned.toTranscriptome.out.bam"
-#    output: temp("STAR/{sample}.fastq.gz")
-#    threads: 5
-#    conda: CONDA_SHARED_ENV
-#    shell: "samtools fastq -@ {threads} {input} | gzip - > {output}"
-
 rule BamFilter:
     input: "STAR/{sample}.sorted.bam"
     output: "STAR/{sample}_tx.fastq"
@@ -170,7 +162,7 @@ rule BamFilter:
     shell:
         """
         samtools view -h -q {params.mapq} -F 4 -L {params.txbed} {input} 2> {log} | \
-        samtools fastq -@ {threads} -T "CB","UB" - | \
+        samtools fastq -@ {threads} -T "CR","UR" - | \
         awk -v RS="@" '{{ gsub("CB:Z:", "", $2);  gsub("UB:Z:", "", $3); print "@"$1"_"$2"_"$3, $4, $5, $6 }}' | awk 'OFS="\\n" {{ if (NF == 4) {{ print $1, $2, $3, $4}} }}' > {output} 2>> {log}
         """
 
@@ -190,8 +182,6 @@ rule CDSmap:
         bowtie2 --end-to-end -p {threads} -x {params.idx} -U {input.fq} 2> {log} | \
         samtools sort -m 1G -T {params.tmpfile} -@ {threads} -O BAM -o {output} 2>> {log}
         """
-#        awk 'OFS="\\t" {{ if($0 ~ "^@") {{print $0}} else \
-#        {{ split($1,bc,"_"); print $0, bc[2], bc[3] }} }}' | \
 
 rule idxBamBowtie:
     input: "Bowtie2_CDS/{sample}.bam"
