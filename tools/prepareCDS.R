@@ -33,13 +33,13 @@ selectmax <- function(g) {
 }
 
 ## prep lengths
-#gtf = suppressWarnings(makeTxDbFromGFF(inGTF))
-gtf <- rtracklayer::import.gff(inGTF)
-gtf <- gtf[gtf$source == "HAVANA" &
-             gtf$transcript_type == "protein_coding" &
-             grepl("appris_principal", gtf$tag) ]
-gtf <- keepStandardChromosomes(gtf)
-gtf <- makeTxDbFromGRanges(gtf)
+gtf = suppressWarnings(makeTxDbFromGFF(inGTF))
+#gtf <- rtracklayer::import.gff(inGTF)
+#gtf <- gtf[gtf$source == "HAVANA" &
+#             gtf$transcript_type == "protein_coding" &
+#             grepl("appris_principal", gtf$tag) ]
+#gtf <- keepStandardChromosomes(gtf)
+#gtf <- makeTxDbFromGRanges(gtf)
 
 txlist <- list(
   uCDS = cdsBy(gtf, "tx", use.names = TRUE),
