@@ -96,7 +96,7 @@ rule Bowtie2index:
         fwd = "annotation/Bowtie2index/selected_CDS_extended.2.bt2",
         rev = "annotation/Bowtie2index/selected_CDS_extended.rev.2.bt2"
     params:
-        outdir = "annotation/Bowtie2index"
+        outdir = "annotation/Bowtie2index/selected_CDS_extended"
     log: "logs/Bowtie2index.log"
     threads: 5
     conda: CONDA_SHARED_ENV
