@@ -151,10 +151,11 @@ rule bamCoverage:
         -b {input.bam} -o {output} > {log} 2>&1"
 
 rule BamFilter:
-    input: "STAR/{sample}.sorted.bam"
+    input:
+        bam = "STAR/{sample}.sorted.bam",
+        bed = "annotation/selected_CDS_exons.bed"
     output: "STAR/{sample}_tx.fastq"
     params:
-        txbed = "annotation/selected_CDS_exons.bed",
         tmpfile = tempDir+"/{sample}",
         mapq = 255
     log: "logs/BamFilter_{sample}.log"
@@ -162,7 +163,7 @@ rule BamFilter:
     conda: CONDA_SHARED_ENV
     shell:
         """
-        samtools view -h -q {params.mapq} -F 4 -L {params.txbed} {input} 2> {log} | \
+        samtools view -h -q {params.mapq} -F 4 -L {input.bed} {input} 2> {log} | \
         samtools fastq -@ {threads} -T "CR","UR" - | \
         awk -v RS="@" '{{ gsub("CR:Z:", "", $2);  gsub("UR:Z:", "", $3); print "@"$1"_"$2"_"$3, $4, $5, $6 }}' | awk 'OFS="\\n" {{ if (NF == 4) {{ print $1, $2, $3, $4}} }}' > {output} 2>> {log}
         """
