@@ -77,8 +77,8 @@ rule STARsolo:
     input:
         r1 = "FASTQ/trimmed/{sample}_trimmed_R1.fastq.gz",
         r2 = "FASTQ/trimmed/{sample}_R2.fastq.gz",
-        gtf = genome_gtf,
         bc = barcodes
+        #gtf = genome_gtf,
     output:
         bam = "STAR/{sample}.sorted.bam",
         raw_counts = "STAR/{sample}/{sample}.Solo.out/Gene/raw/matrix.mtx",
@@ -101,7 +101,6 @@ rule STARsolo:
           --sjdbOverhang 50 \
           --outSAMtype BAM SortedByCoordinate \
           --outSAMattributes NH HI nM AS CR UR CB UB GX GN sS sQ sM \
-          --sjdbGTFfile {input.gtf} \
           --genomeDir {params.index} \
           --readFilesIn  {input.r1} {input.r2} \
           --readFilesCommand gunzip -c \
@@ -121,6 +120,7 @@ rule STARsolo:
           --soloCellFilter None > {log} 2>&1
         ##--quantMode TranscriptomeSAM \
         ##--quantTranscriptomeBan Singleend
+        ##--sjdbGTFfile {input.gtf} \
         ## clean
         ln -rs {params.prefix}Aligned.sortedByCoord.out.bam {output.bam}
         rm -rf $MYTEMP
