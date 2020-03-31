@@ -53,7 +53,7 @@ rule prepCDSbed:
     threads: 1
     conda: CONDA_SHARED_ENV
     shell:
-        "Rscript {params.rscript} {input} {output.bed} {output.annot} 2> {log} 2>&1"
+        "Rscript {params.rscript} {input} {output.bed} {output.annot} > {log} 2>&1"
 
 rule prepCDSfasta:
     input:
@@ -67,7 +67,7 @@ rule prepCDSfasta:
     conda: CONDA_SHARED_ENV
     shell:
         "gffread -P -J -M -W -E -T --w-add {params.extend} -w {output} \
-        -g {input.fasta} --in-bed {input.bed} 2> {log} 2>&1"
+        -g {input.fasta} --in-bed {input.bed} > {log} 2>&1"
 
 ## prepare indicies
 rule STARindex:
@@ -88,7 +88,7 @@ rule STARindex:
         --genomeDir {params.outdir} \
         --genomeFastaFiles {input.fa} \
         --sjdbGTFfile {input.gtf} \
-        --sjdbOverhang 50 2> {log} 2>&1"
+        --sjdbOverhang 50 > {log} 2>&1"
 
 rule Bowtie2index:
     input: "annotation/selected_CDS_extended.fa"
@@ -102,4 +102,4 @@ rule Bowtie2index:
     conda: CONDA_SHARED_ENV
     shell:
         "bowtie2-build --seed 2020 --threads {threads} \
-        {input} {params.outdir} 2> {log} 2>&1"
+        {input} {params.outdir} > {log} 2>&1"
