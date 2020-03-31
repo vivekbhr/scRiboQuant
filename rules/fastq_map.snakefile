@@ -114,10 +114,11 @@ rule STARsolo:
           --soloCBlen 10 \
           --soloCBwhitelist {input.bc} \
           --soloBarcodeReadLength 0 \
-          --soloCBmatchWLtype 1MM_multi_pseudocounts \
+          --soloCBmatchWLtype 1MM \
           --soloStrand Forward \
           --soloUMIdedup Exact \
-          --soloUMIfiltering MultiGeneUMI > {log} 2>&1
+          --soloUMIfiltering MultiGeneUMI \
+          --soloCellFilter None > {log} 2>&1
         ##--quantMode TranscriptomeSAM \
         ##--quantTranscriptomeBan Singleend
         ## clean
@@ -153,7 +154,7 @@ rule BamFilter:
     input: "STAR/{sample}.sorted.bam"
     output: "STAR/{sample}_tx.fastq"
     params:
-        txbed = "annotation/selected_CDS.bed",
+        txbed = "annotation/selected_CDS_exons.bed",
         tmpfile = tempDir+"/{sample}",
         mapq = 255
     log: "logs/BamFilter_{sample}.log"

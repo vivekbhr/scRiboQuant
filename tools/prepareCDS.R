@@ -8,6 +8,7 @@ Args <- commandArgs(trailingOnly = T)
 inGTF <- Args[1] # "raw.gtf"
 CDSout <- Args[2] #  "selected_CDS.bed"
 BEDout <- Args[3] # "selected_CDS_annotation.bed"
+Exonsout <- Args[4] # "selected_CDS_exons.bed"
 
 ## getting the top tx from a multi-tx gene
 selectmax <- function(g) {
@@ -102,3 +103,4 @@ strand(bed) <- "+"
 ## write outputs
 rtracklayer::export.bed15(finalCDS, CDSout)
 rtracklayer::export.bed(bed, con = BEDout)
+rtracklayer::export.bed(unlist(finalCDS), con = Exonsout)
