@@ -1,0 +1,29 @@
+package:
+  name: scRiboQuant
+  version: 0.1
+
+source:
+  path: ../
+
+build:
+  number: 0
+  noarch: python
+
+requirements:
+  host:
+    - python >=3
+  run:
+    - python >=3
+    - snakemake >=5.11
+    - pyyaml >=5.1
+    - coreutils
+
+test:
+  commands:
+    - scRiboQuant --help
+
+about:
+  home: 'https://github.com/vivekbhr/scRiboQuant'
+  license: MIT
+  summary: scRibo-seq processing workflow
+  license_file: LICENSE
