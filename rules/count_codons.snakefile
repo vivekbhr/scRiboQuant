@@ -58,3 +58,19 @@ rule count_regions_cells:
         --per-cell --method=percentile -I {input.bam} -S {output} \
         -v 4 --log2stderr --log={log.out} 2> {log.err}"
 #        --cell-tag=CB --umi-tag=UB --extract-umi-method=tag \
+
+rule count_codons_cells:
+    input:
+        bam = "dedup/{sample}.dedup.bam",
+        bai = "dedup/{sample}.dedup.bam.bai",
+        bed = "annotation/selected_CDS_annotation.bed"
+    output:
+        tsv = "counts/{sample}.codonCounts_per_barcode.tsv"
+    params:
+        rscript = os.path.join(workflow.basedir, "tools", "countCodons.R")
+    log:
+        out="logs/codonCounts_{sample}.log"
+    threads: 1
+    conda: CONDA_SHARED_ENV
+    shell:
+        "Rscript {params.rscript} {input.bam} {output.bed} {output.tsv} > {log} 2>&1"

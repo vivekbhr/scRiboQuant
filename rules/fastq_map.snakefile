@@ -82,9 +82,7 @@ rule STARsolo:
         #gtf = genome_gtf,
     output:
         bam = "STAR/{sample}.sorted.bam",
-        raw_counts = "STAR/{sample}/{sample}.Solo.out/Gene/raw/matrix.mtx",
-        filtered_counts = "STAR/{sample}/{sample}.Solo.out/Gene/filtered/matrix.mtx",
-        filtered_bc = "STAR/{sample}/{sample}.Solo.out/Gene/filtered/barcodes.tsv"
+        raw_counts = "STAR/{sample}/{sample}.Solo.out/Gene/raw/matrix.mtx"
     params:
         index = "annotation/STARindex",
         prefix = "STAR/{sample}/{sample}.",
@@ -119,16 +117,16 @@ rule STARsolo:
           --soloCBmatchWLtype 1MM_multi \
           --soloStrand Forward \
           --soloUMIdedup 1MM_Directional \
-          --soloCellFilter None > {log} 2>&1
-        ##--quantMode TranscriptomeSAM \
-        ##--quantTranscriptomeBan Singleend
-        ##--sjdbGTFfile {input.gtf} \
+          --soloCellFilter None \
+          --quantMode TranscriptomeSAM \
+          --quantTranscriptomeBan Singleend > {log} 2>&1
         ## clean
         ln -rs {params.prefix}Aligned.sortedByCoord.out.bam {output.bam}
         rm -rf $MYTEMP
         """
 
 ## old params
+        ##--sjdbGTFfile {input.gtf} \
           #--soloUMIdedup Exact \
           #--soloUMIfiltering MultiGeneUMI \
 
