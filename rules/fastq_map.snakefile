@@ -108,12 +108,12 @@ rule STARsolo:
           --outFileNamePrefix {params.prefix} \
           --soloType CB_UMI_Simple \
           --soloFeatures Gene \
-          --soloUMIstart 11 \
-          --soloUMIlen 10 \
           --soloCBstart 1 \
           --soloCBlen 10 \
+          --soloUMIstart 11 \
+          --soloUMIlen 10 \
           --soloCBwhitelist {input.bc} \
-          --soloBarcodeReadLength 0 \
+          --soloBarcodeReadLength 1 \
           --soloCBmatchWLtype 1MM \
           --soloStrand Forward \
           --soloUMIdedup Exact \
