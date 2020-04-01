@@ -100,6 +100,8 @@ rule STARsolo:
         ## run
         STAR --runThreadN {threads} \
           --sjdbOverhang 50 \
+          --seedSearchStartLmax 15 \
+          --alignIntronMax 1000000 \
           --outSAMtype BAM SortedByCoordinate \
           --outSAMattributes NH HI nM AS CR UR CB UB GX GN sS sQ sM \
           --genomeDir {params.index} \
@@ -114,10 +116,9 @@ rule STARsolo:
           --soloUMIlen 10 \
           --soloCBwhitelist {input.bc} \
           --soloBarcodeReadLength 1 \
-          --soloCBmatchWLtype 1MM \
+          --soloCBmatchWLtype 1MM_multi \
           --soloStrand Forward \
-          --soloUMIdedup Exact \
-          --soloUMIfiltering MultiGeneUMI \
+          --soloUMIdedup 1MM_Directional \
           --soloCellFilter None > {log} 2>&1
         ##--quantMode TranscriptomeSAM \
         ##--quantTranscriptomeBan Singleend
@@ -126,6 +127,10 @@ rule STARsolo:
         ln -rs {params.prefix}Aligned.sortedByCoord.out.bam {output.bam}
         rm -rf $MYTEMP
         """
+
+## old params
+          #--soloUMIdedup Exact \
+          #--soloUMIfiltering MultiGeneUMI \
 
 rule idxBamSTAR:
     input: "STAR/{sample}.sorted.bam"
