@@ -1,7 +1,7 @@
 def get_multiqc_input():
     file = [
         expand("QC/FastQC/{sample}_{read}_fastqc.html", sample = samples, read=['R1', 'trimmed_R1']),
-        expand("STAR/{sample}/{sample}.Solo.out/Gene/filtered/barcodes.tsv", sample = samples),
+        expand("STAR/{sample}/{sample}.Solo.out/Gene/raw/matrix.mtx", sample = samples),
         expand("Bowtie2_CDS/{sample}.bam", sample = samples)
         ]
 

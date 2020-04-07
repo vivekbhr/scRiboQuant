@@ -30,6 +30,11 @@ def get_sample_names(infiles, ext, reads):
         s.add(x)
     return sorted(list(s))
 
+def get_bcList(bc):
+    with open(bc) as f:
+        lis = [str(line.split()[0]) for line in f]
+    return(lis[0:380])
+
 # update envs
 globals().update(set_condaEnv())
 # load config file
@@ -38,6 +43,7 @@ globals().update(load_configfile(workflow.overwrite_configfiles[0]))
 ## load samples
 infiles = sorted(glob.glob(os.path.join(indir, '*'+ext)))
 samples = get_sample_names(infiles,ext,reads)
+bclist = get_bcList(barcodes)
 
 ### include modules of other snakefiles ########################################
 ################################################################################
@@ -75,8 +81,10 @@ rule all:
         expand("Bowtie2_CDS/{sample}.bam.bai", sample = samples),
         expand("dedup/{sample}.dedup.bam", sample = samples),
         expand("counts/{sample}.CDScounts_per_barcode.tsv", sample = samples),
-        "QC/multiqc_report.html"
-
+        expand("split_bam/{sample}.CB_{barcode}.bam", sample = samples, barcode = bclist),
+        "QC/multiqc_report.html",
+        expand("split_bam/{sample}.CB_{barcode}.bam.bai", sample = samples, barcode = bclist),
+        expand("bigWigs_sc/{sample}_{barcode}_Offset12.bw", sample = samples, barcode = bclist)
 
 ### execute after workflow finished ############################################
 ################################################################################

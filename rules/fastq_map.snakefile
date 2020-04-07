@@ -45,15 +45,19 @@ rule preprocess:
         "{params.trimFq} {input.r1} {input.r2} {output.r1} {output.r2}"
 
 rule cutadapt:
-    input: "FASTQ/trimmed/{sample}_R1.fastq.gz"
-    output: "FASTQ/trimmed/{sample}_trimmed_R1.fastq.gz"
+    input:
+        R1 = "FASTQ/trimmed/{sample}_R1.fastq.gz",
+        R2 = "FASTQ/trimmed/{sample}_R2.fastq.gz"
+    output:
+        R1 = "FASTQ/trimmed/{sample}_trimmed_R1.fastq.gz",
+        R2 = "FASTQ/trimmed/{sample}_trimmed_R2.fastq.gz"
     log: "logs/cutadapt.{sample}.out"
     threads: 8
     conda: CONDA_SHARED_ENV
     shell:
         "cutadapt -j {threads} --minimum-length 18 --maximum-length 50 \
         -e 0.1 -q 20 -O 3 --trim-n -a TGGAATTCTCGG \
-        -o {output} {input} > {log} 2>&1 "
+        -o {output.R1} -p {output.R2} {input.R1} {input.R2} > {log} 2>&1 "
 
 rule FastQC:
     input:
@@ -72,14 +76,13 @@ rule FastQC:
         "fastqc -d {params.tmp} -t {threads} -o {params.outdir} \
         {input.untrimmed} {input.trimmed} > {log} 2>&1"
 
-#        txbam = "STAR/{sample}/{sample}.Aligned.toTranscriptome.out.bam",
+
 rule STARsolo:
     input:
         idx = "annotation/STARindex/Genome",
         r1 = "FASTQ/trimmed/{sample}_trimmed_R1.fastq.gz",
-        r2 = "FASTQ/trimmed/{sample}_R2.fastq.gz",
+        r2 = "FASTQ/trimmed/{sample}_trimmed_R2.fastq.gz",
         bc = barcodes
-        #gtf = genome_gtf,
     output:
         bam = "STAR/{sample}.sorted.bam",
         raw_counts = "STAR/{sample}/{sample}.Solo.out/Gene/raw/matrix.mtx"
@@ -88,7 +91,7 @@ rule STARsolo:
         prefix = "STAR/{sample}/{sample}.",
         sample_dir = "STAR/{sample}"
     log: "logs/STAR.{sample}.log"
-    threads: 20
+    threads: 10
     conda: CONDA_SHARED_ENV
     shell:
         """
@@ -113,7 +116,7 @@ rule STARsolo:
           --soloUMIstart 11 \
           --soloUMIlen 10 \
           --soloCBwhitelist {input.bc} \
-          --soloBarcodeReadLength 1 \
+          --soloBarcodeReadLength 0 \
           --soloCBmatchWLtype 1MM_multi \
           --soloStrand Forward \
           --soloUMIdedup 1MM_Directional \
@@ -154,81 +157,48 @@ rule bamCoverage:
         -ignore {params.ignore}  \
         -b {input.bam} -o {output} > {log} 2>&1"
 
-rule BamFilter:
+rule split_bam:
     input:
         bam = "STAR/{sample}.sorted.bam",
-        bed = "annotation/selected_CDS_exons.bed"
-    output: "STAR/{sample}_tx.fastq"
+        bc = barcodes
+    output: expand("split_bam/{{sample}}.CB_{barcode}.bam", barcode = bclist)
     params:
+        outprefix="split_bam/{sample}",
         mapq = 255
-    log: "logs/BamFilter_{sample}.log"
-    threads: 5
+    wildcard_constraints:
+        barcode="[ATGCN]*"
+    threads: 1
     conda: CONDA_SHARED_ENV
     shell:
-        """
-        samtools view -h -q {params.mapq} -F 4 -L {input.bed} {input.bam} 2> {log} | \
-        samtools fastq -@ {threads} -T "CR","UR" - | \
-        awk -v RS="@" '{{ gsub("CR:Z:", "", $2);  gsub("UR:Z:", "", $3); \
-        print "@"$1"_"$2"_"$3, $4, $5, $6 }}' | \
-        awk 'OFS="\\n" {{ if (NF == 4) {{ print $1, $2, $3, $4}} }}' > {output} 2>> {log}
-        """
+        "samtools view -h -b -q {params.mapq} {input.bam} | \
+        bamtools split -in - -tag CB -tagPrefix '' -stub {params.outprefix}"
 
-rule CDSmap:
+rule idx_split_bam:
+    input: "split_bam/{sample}.CB_{barcode}.bam"
+    output: "split_bam/{sample}.CB_{barcode}.bam.bai"
+    wildcard_constraints:
+        barcode="[ATGCN]*"
+    threads: 1
+    conda: CONDA_SHARED_ENV
+    shell:
+        "samtools index {input}"
+
+
+rule bamCoverage_sc:
     input:
-        fq = "STAR/{sample}_tx.fastq",
-        index = "annotation/Bowtie2index/selected_CDS_extended.rev.2.bt2"
-    output: "Bowtie2_CDS/{sample}.bam"
+        bam = "split_bam/{sample}.CB_{barcode}.bam",
+        bai = "split_bam/{sample}.CB_{barcode}.bam.bai"
+    output: "bigWigs_sc/{sample}_{barcode}_Offset12.bw"
+    wildcard_constraints:
+        barcode="[ATGCN]*"
     params:
-        idx = "annotation/Bowtie2index/selected_CDS_extended",
-        tmpfile = tempDir+"/{sample}"
-    log: "logs/bowtie2_CDS.{sample}.log"
-    threads: 10
+        ignore = "chrX chrY chrM",
+        norm = '--normalizeUsing CPM'
+    log: "logs/bamCoverage.{sample}_{barcode}.log"
+    threads: 4
     conda: CONDA_SHARED_ENV
     shell:
-        """
-        bowtie2 --end-to-end -p {threads} -x {params.idx} -U {input.fq} 2> {log} | \
-        samtools sort -m 1G -T {params.tmpfile} -@ {threads} -O BAM -o {output} 2>> {log}
-        """
-
-rule idxBamBowtie:
-    input: "Bowtie2_CDS/{sample}.bam"
-    output: "Bowtie2_CDS/{sample}.bam.bai"
-    threads: 1
-    conda: CONDA_SHARED_ENV
-    shell: "samtools index {input}"
-
-rule umi_dedup:
-    input:
-        bam = "Bowtie2_CDS/{sample}.bam",
-        idx = "Bowtie2_CDS/{sample}.bam.bai"
-    output:
-        bam = "dedup/{sample}.dedup.bam",
-        stats = "QC/umi_dedup/{sample}_per_umi.tsv"
-    params:
-        mapq = 10,
-        sample = "{sample}"
-    log:
-        out = "logs/umi_dedup_{sample}.out",
-        err = "logs/umi_dedup_{sample}.err"
-    threads: 1
-    conda: CONDA_SHARED_ENV
-    shell:
-        """
-        umi_tools dedup --mapping-quality {params.mapq} \
-        --per-cell --per-gene --per-contig \
-        --method unique \
-        --output-stats=QC/umi_dedup/{params.sample} \
-        -I {input.bam} -L {log.out} | \
-        samtools view -F 4 -h | \
-        awk -v sample={params.sample} \
-        'OFS="\\t" {{ if($0 ~ "^@") {{print $0}} else \
-        {{ split($1,a,"_"); print $0, "SM:Z:"sample"_"a[2], "CB:Z:"a[2], "UB:Z:"a[3], "MI:Z:"a[2]a[3] }} }}' | \
-        samtools sort -@ {threads} -T {params.sample} -o {output.bam} > {log.out} 2> {log.err}
-        """
-
-rule idxBamDedup:
-    input: "dedup/{sample}.dedup.bam"
-    output: "dedup/{sample}.dedup.bam.bai"
-    threads: 1
-    conda: CONDA_SHARED_ENV
-    shell: "samtools index {input}"
+        "bamCoverage -bs 1 --Offset -12 {params.norm} \
+        --minMappingQuality 255 -p {threads} \
+        -ignore {params.ignore}  \
+        -b {input.bam} -o {output} > {log} 2>&1"
