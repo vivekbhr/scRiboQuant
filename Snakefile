@@ -33,7 +33,8 @@ def get_sample_names(infiles, ext, reads):
 def get_bcList(bc):
     with open(bc) as f:
         lis = [str(line.split()[0]) for line in f]
-    return(lis[0:380])
+    return(lis)
+
 
 # update envs
 globals().update(set_condaEnv())
@@ -52,6 +53,8 @@ if prepareAnnotation:
 include: os.path.join(workflow.basedir, "rules", "fastq_map.snakefile")
 include: os.path.join(workflow.basedir, "rules", "count_codons.snakefile")
 include: os.path.join(workflow.basedir, "rules", "QC.snakefile")
+if nCellsCoverage > 0:
+    include: os.path.join(workflow.basedir, "rules", "scCoverage.snakefile")
 
 ### conditional/optional rules #################################################
 ################################################################################
@@ -64,6 +67,16 @@ def prep_annotation():
     else:
         out = []
     return(out)
+
+def prep_scCoverage():
+    if nCellsCoverage > 0:
+        out = expand("bigWigs_singleCells/{sample}_{barcode}_Offset12.bw", sample = samples, barcode = bclist[0:nCellsCoverage])
+    else:
+        out = []
+    return(out)
+
+#                expand("split_bam/{sample}.CB_{barcode}.bam", sample = samples, barcode = bclist),
+#                expand("split_bam/{sample}.CB_{barcode}.bam.bai", sample = samples, barcode = bclist),
 
 ### main rule ##################################################################
 ################################################################################
@@ -81,10 +94,8 @@ rule all:
         expand("Bowtie2_CDS/{sample}.bam.bai", sample = samples),
         expand("dedup/{sample}.dedup.bam", sample = samples),
         expand("counts/{sample}.CDScounts_per_barcode.tsv", sample = samples),
-        expand("split_bam/{sample}.CB_{barcode}.bam", sample = samples, barcode = bclist),
-        "QC/multiqc_report.html",
-        expand("split_bam/{sample}.CB_{barcode}.bam.bai", sample = samples, barcode = bclist),
-        expand("bigWigs_sc/{sample}_{barcode}_Offset12.bw", sample = samples, barcode = bclist)
+        prep_Coverage(),
+        "QC/multiqc_report.html"
 
 ### execute after workflow finished ############################################
 ################################################################################

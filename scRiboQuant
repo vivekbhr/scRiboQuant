@@ -170,6 +170,11 @@ def parse_args(defaults=None):
                           help="minimum mapping quality (filter to apply after mapping). (default: '%(default)s')",
                           default=10)
 
+    parser.add_argument("-nc", "--nCellsCoverage",
+                          dest="nCellsCoverage",
+                          help="No. of barcodes (from the barcode list) for which to prepare single-cell coverage (bigwig) files (default: '%(default)s')",
+                          default=0)
+
     parser.add_argument("-s", "--snakemakeOptions",
                           dest="snakemakeOptions",
                           metavar="STR",
