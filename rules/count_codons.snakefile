@@ -2,7 +2,7 @@ rule BamFilter:
     input:
         bam = "STAR/{sample}.sorted.bam",
         bed = "annotation/selected_CDS_exons.bed"
-    output: "STAR/{sample}_tx.fastq"
+    output: temp("STAR/{sample}_tx.fastq")
     params:
         mapq = 255
     log: "logs/BamFilter_{sample}.log"
@@ -21,7 +21,7 @@ rule CDSmap:
     input:
         fq = "STAR/{sample}_tx.fastq",
         index = "annotation/Bowtie2index/selected_CDS_extended.rev.2.bt2"
-    output: "Bowtie2_CDS/{sample}.bam"
+    output: temp("deduplicated_bams/{sample}.bam")
     params:
         idx = "annotation/Bowtie2index/selected_CDS_extended",
         tmpfile = tempDir+"/{sample}"
@@ -35,18 +35,18 @@ rule CDSmap:
         """
 
 rule idxBamBowtie:
-    input: "Bowtie2_CDS/{sample}.bam"
-    output: "Bowtie2_CDS/{sample}.bam.bai"
+    input: "deduplicated_bams/{sample}.bam"
+    output: temp("deduplicated_bams/{sample}.bam.bai")
     threads: 1
     conda: CONDA_SHARED_ENV
     shell: "samtools index {input}"
 
 rule umi_dedup:
     input:
-        bam = "Bowtie2_CDS/{sample}.bam",
-        idx = "Bowtie2_CDS/{sample}.bam.bai"
+        bam = "deduplicated_bams/{sample}.bam",
+        idx = "deduplicated_bams/{sample}.bam.bai"
     output:
-        bam = "dedup/{sample}.dedup.bam",
+        bam = "deduplicated_bams/{sample}_tx.bam",
         stats = "QC/umi_dedup/{sample}_per_umi.tsv"
     params:
         mapq = 10,
@@ -72,8 +72,8 @@ rule umi_dedup:
         """
 
 rule idxBamDedup:
-    input: "dedup/{sample}.dedup.bam"
-    output: "dedup/{sample}.dedup.bam.bai"
+    input: "deduplicated_bams/{sample}.dedup.bam"
+    output: "deduplicated_bams/{sample}.dedup.bam.bai"
     threads: 1
     conda: CONDA_SHARED_ENV
     shell: "samtools index {input}"
@@ -141,8 +141,8 @@ rule count_regions_cells:
 
 rule count_codons_cells:
     input:
-        bam = "dedup/{sample}.dedup.bam",
-        bai = "dedup/{sample}.dedup.bam.bai",
+        bam = "deduplicated_bams/{sample}_tx.bam",
+        bai = "deduplicated_bams/{sample}_tx.bam.bai",
         bed = "annotation/selected_CDS_annotation.bed"
     output:
         tsv = "counts/{sample}.codonCounts_per_barcode.tsv"

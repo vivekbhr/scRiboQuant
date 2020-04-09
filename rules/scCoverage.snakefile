@@ -3,7 +3,8 @@ rule split_bam:
     input:
         bam = "STAR/{sample}.sorted.bam",
         bc = barcodes
-    output: expand("split_bam/{{sample}}.CB_{barcode}.bam", barcode = bclist[0:nCellsCoverage])
+    output:
+        temp(expand("split_bam/{{sample}}.CB_{barcode}.bam", barcode = bclist[0:nCellsCoverage]))
     params:
         outprefix="split_bam/{sample}",
         mapq = 255
@@ -17,7 +18,7 @@ rule split_bam:
 
 rule idx_split_bam:
     input: "split_bam/{sample}.CB_{barcode}.bam"
-    output: "split_bam/{sample}.CB_{barcode}.bam.bai"
+    output: temp("split_bam/{sample}.CB_{barcode}.bam.bai")
     wildcard_constraints:
         barcode="[ATGCN]*"
     threads: 1
@@ -30,7 +31,7 @@ rule bamCoverage_sc:
     input:
         bam = "split_bam/{sample}.CB_{barcode}.bam",
         bai = "split_bam/{sample}.CB_{barcode}.bam.bai"
-    output: "bigWigs_singleCells/{sample}_{barcode}_Offset12.bw"
+    output: "bigWigs/{sample}_{barcode}_Offset12.bw"
     wildcard_constraints:
         barcode="[ATGCN]*"
     params:

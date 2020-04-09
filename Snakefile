@@ -70,7 +70,7 @@ def prep_annotation():
 
 def prep_scCoverage():
     if nCellsCoverage > 0:
-        out = expand("bigWigs_singleCells/{sample}_{barcode}_Offset12.bw", sample = samples, barcode = bclist[0:nCellsCoverage])
+        out = expand("bigWigs/{sample}_{barcode}_Offset12.bw", sample = samples, barcode = bclist[0:nCellsCoverage])
     else:
         out = []
     return(out)
@@ -86,16 +86,19 @@ rule all:
         prep_annotation(),
         expand("FASTQ/{sample}_{read}.fastq.gz", sample = samples, read = ['R1', 'R2']),
         expand("FASTQ/trimmed/{sample}_trimmed_R1.fastq.gz", sample = samples),
-        expand("QC/FastQC/{sample}_{read}_fastqc.html", sample = samples, read=['R1', 'trimmed_R1']),
+        expand("QC/FastQC/{sample}_{read}_fastqc.html", sample = samples,
+                read=['R1', 'trimmed_R1']),
         expand("STAR/{sample}.sorted.bam", sample = samples),
         expand("STAR/{sample}/{sample}.Solo.out/Gene/raw/matrix.mtx", sample = samples),
         expand("bigWigs/{sample}_wholeGenome_Offset12.bw", sample = samples),
-        expand("Bowtie2_CDS/{sample}.bam", sample = samples),
-        expand("Bowtie2_CDS/{sample}.bam.bai", sample = samples),
-        expand("dedup/{sample}.dedup.bam", sample = samples),
+        expand("deduplicated_bams/{sample}_tx.bam", sample = samples),
         expand("counts/{sample}.CDScounts_per_barcode.tsv", sample = samples),
-        prep_Coverage(),
+        prep_scCoverage(),
         "QC/multiqc_report.html"
+
+#        expand("Bowtie2_CDS/{sample}.bam", sample = samples),
+#        expand("Bowtie2_CDS/{sample}.bam.bai", sample = samples),
+
 
 ### execute after workflow finished ############################################
 ################################################################################

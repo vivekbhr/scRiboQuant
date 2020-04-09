@@ -37,8 +37,8 @@ rule preprocess:
         r1 = "FASTQ/{sample}_R1.fastq.gz",
         r2 = "FASTQ/{sample}_R2.fastq.gz"
     output:
-        r1 = "FASTQ/trimmed/{sample}_R1.fastq.gz", #temp() later
-        r2 = "FASTQ/trimmed/{sample}_R2.fastq.gz"
+        r1 = temp("FASTQ/trimmed/{sample}_R1.fastq.gz"),
+        r2 = temp("FASTQ/trimmed/{sample}_R2.fastq.gz")
     params:
         trimFq = os.path.join(workflow.basedir, "tools/trimFastq/trimFastq")
     shell:
@@ -64,8 +64,8 @@ rule FastQC:
         untrimmed = "FASTQ/trimmed/{sample}_R1.fastq.gz",
         trimmed = "FASTQ/trimmed/{sample}_trimmed_R1.fastq.gz"
     output:
-        untrimmed = "QC/FastQC/{sample}_R1_fastqc.html",
-        trimmed = "QC/FastQC/{sample}_trimmed_R1_fastqc.html"
+        untrimmed = temp("QC/FastQC/{sample}_R1_fastqc.html"),
+        trimmed = temp("QC/FastQC/{sample}_trimmed_R1_fastqc.html")
     params:
         outdir = "QC/FastQC",
         tmp = tempDir
@@ -120,18 +120,19 @@ rule STARsolo:
           --soloCBmatchWLtype 1MM_multi \
           --soloStrand Forward \
           --soloUMIdedup 1MM_Directional \
-          --soloCellFilter None \
-          --quantMode TranscriptomeSAM \
-          --quantTranscriptomeBan Singleend > {log} 2>&1
+          --soloCellFilter None > {log} 2>&1
         ## clean
         ln -rs {params.prefix}Aligned.sortedByCoord.out.bam {output.bam}
         rm -rf $MYTEMP
         """
 
+
 ## old params
         ##--sjdbGTFfile {input.gtf} \
           #--soloUMIdedup Exact \
           #--soloUMIfiltering MultiGeneUMI \
+          #--quantMode TranscriptomeSAM \
+          #--quantTranscriptomeBan Singleend
 
 rule idxBamSTAR:
     input: "STAR/{sample}.sorted.bam"
