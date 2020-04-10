@@ -1,0 +1,3 @@
+include scriboquant/*.yaml
+recursive-include scriboquant/rules *
+recursive-include scriboquant/tools *

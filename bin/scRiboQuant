@@ -13,6 +13,8 @@ import sys
 import textwrap
 import yaml
 import subprocess
+import scriboquant
+
 ### DEFINE FUNCTIONS TO LOAD AND RUN Workflow ###
 ########################################################
 
