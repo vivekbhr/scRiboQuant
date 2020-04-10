@@ -122,17 +122,6 @@ def parse_args(defaults=None):
         description=textwrap.dedent(__description__),
         add_help=False
     )
-    mex = parser.add_mutually_exclusive_group()
-
-    mex.add_argument("-p", "--prepareAnnotation",
-                          help="prepare annotations/indicies using the provided fasta/gtf/bed files. Note that genome_fasta, genome_gtf and mask_bed, entries must be provided in the config file. This option is mutually exclusive to --annot.",
-                          action="store_true")
-
-    mex.add_argument("-a", "--annot",
-                          dest="annotation",
-                          metavar="STR",
-                          help="Directory containing annotation and indices (created using 'prepareAnnotation' command)",
-                          type=str)
 
     # Workflow options
     parser.add_argument("-i", "--indir",
@@ -154,16 +143,16 @@ def parse_args(defaults=None):
                           required=True,
                           help="output directory")
 
+    parser.add_argument("-t", "--tempDir",
+                          dest="tempDir",
+                          help="Directory to store temporary files. (default: '%(default)s')",
+                          default='/tmp/')
+
     parser.add_argument("-d", "--downsample",
                           dest="downsample",
                           type=int,
                           default=None,
                           help="output directory")
-
-    parser.add_argument("-t", "--tempDir",
-                          dest="tempDir",
-                          help="Directory to store temporary files. (default: '%(default)s')",
-                          default='/tmp/')
 
     parser.add_argument("-q", "--minQ",
                           dest="min_mapq",

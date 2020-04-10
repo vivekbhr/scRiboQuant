@@ -48,8 +48,7 @@ bclist = get_bcList(barcodes)
 
 ### include modules of other snakefiles ########################################
 ################################################################################
-if prepareAnnotation:
-    include: os.path.join(workflow.basedir, "rules", "create_annotation.snakefile")
+include: os.path.join(workflow.basedir, "rules", "create_annotation.snakefile")
 include: os.path.join(workflow.basedir, "rules", "fastq_map.snakefile")
 include: os.path.join(workflow.basedir, "rules", "count_codons.snakefile")
 include: os.path.join(workflow.basedir, "rules", "QC.snakefile")
@@ -59,15 +58,6 @@ if nCellsCoverage > 0:
 ### conditional/optional rules #################################################
 ################################################################################
 
-def prep_annotation():
-    if prepareAnnotation:
-        out = ["annotation/genome.fa", "annotation/gtf_annotation_table.txt",
-              "annotation/selected_CDS.bed", "annotation/selected_CDS_annotation.bed",
-              "annotation/STARindex/Genome", "annotation/Bowtie2index/selected_CDS_extended.rev.2.bt2"]
-    else:
-        out = []
-    return(out)
-
 def prep_scCoverage():
     if nCellsCoverage > 0:
         out = expand("bigWigs/{sample}_{barcode}_Offset12.bw", sample = samples, barcode = bclist[0:nCellsCoverage])
@@ -75,11 +65,13 @@ def prep_scCoverage():
         out = []
     return(out)
 
-#                expand("split_bam/{sample}.CB_{barcode}.bam", sample = samples, barcode = bclist),
-#                expand("split_bam/{sample}.CB_{barcode}.bam.bai", sample = samples, barcode = bclist),
-
 ### main rule ##################################################################
 ################################################################################
+def prep_annotation():
+    out = ["annotation/genome.fa", "annotation/gtf_annotation_table.txt",
+          "annotation/selected_CDS.bed", "annotation/selected_CDS_annotation.bed",
+          "annotation/STARindex/Genome", "annotation/Bowtie2index/selected_CDS_extended.rev.2.bt2"]
+    return(out)
 
 rule all:
     input:
@@ -95,9 +87,6 @@ rule all:
         expand("counts/{sample}.CDScounts_per_barcode.tsv", sample = samples),
         prep_scCoverage(),
         "QC/multiqc_report.html"
-
-#        expand("Bowtie2_CDS/{sample}.bam", sample = samples),
-#        expand("Bowtie2_CDS/{sample}.bam.bai", sample = samples),
 
 
 ### execute after workflow finished ############################################
