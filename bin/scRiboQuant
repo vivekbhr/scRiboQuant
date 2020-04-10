@@ -59,7 +59,7 @@ def commonYAMLandLogs(baseDir, args, callingScript):
                                tempDir=args.tempDir,
                                condadir=args.conda_dir,
                                latency_wait=cluster_config["latency_wait"],
-                               snakemakeOptions=str(args.snakemakeOptions or ''),
+                               snakemakeOptions=str(args.snakemakeOptions or ' '),
                                configFile=os.path.join(args.outdir, 'scRiboQuant_config.yaml')).split()
 
     if args.verbose:
