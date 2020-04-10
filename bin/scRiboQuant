@@ -175,8 +175,8 @@ def parse_args(defaults=None):
     parser.add_argument("-ro", "--readOffset",
                           dest="offset",
                           type=int,
-                          help="What offset to use (No. of bases left of 3'-read end) for creating coverage files and counting codons (default: '%(default)s')",
-                          default=0)
+                          help="Which (single-base) position within the read shall be used for creating coverage files and counting codons? (-X means X bases from 3'-end) (default: '%(default)s')",
+                          default='-12')
 
     parser.add_argument("-s", "--snakemakeOptions",
                           dest="snakemakeOptions",
