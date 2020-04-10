@@ -169,7 +169,7 @@ def parse_args(defaults=None):
                           default=0)
 
     parser.add_argument("-cc", "--countCodons",
-                          dest="countCodons",
+                          dest="counts_codons",
                           action = "store_true",
                           help="Produce per-gene per-codon counts in single-cells (default: '%(default)s')",
                           default=False)
