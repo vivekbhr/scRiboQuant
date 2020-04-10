@@ -218,9 +218,10 @@ def parse_args(defaults=None):
 
 
 def main():
-    #baseDir, workflowDir, defaults = setDefaults(os.path.basename(__file__))
-    baseDir = os.path.dirname(__file__)
-
+    #baseDir = os.path.dirname(__file__)
+    baseDir = os.path.dirname(snakePipes.__file__)
+    #maindir = os.path.dirname(os.path.dirname(workflow.basedir))
+    #workflow_rscripts=os.path.join(maindir, "shared", "rscripts")
     # get command line arguments
     parser = parse_args()
     args = parser.parse_args()
