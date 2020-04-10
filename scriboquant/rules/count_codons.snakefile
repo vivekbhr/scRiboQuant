@@ -159,5 +159,5 @@ if counts_codons:
         threads: 15
         conda: CONDA_SHARED_ENV
         shell:
-            "Rscript {params.rscript} {input.bed} {output.fa} {input.bam} {input.bc} \
+            "Rscript {params.rscript} {input.bed} {input.fa} {input.bam} {input.bc} \
             {params.offset} {threads} {params.prefix} > {log} 2>&1"
