@@ -65,6 +65,13 @@ def prep_scCoverage():
         out = []
     return(out)
 
+def count_codons():
+    if counts_codons:
+        out = expand("counts/{sample}_counts.Mtx", sample = samples)
+    else:
+        out = []
+    return(out)
+
 ### main rule ##################################################################
 ################################################################################
 def prep_annotation():
@@ -86,6 +93,7 @@ rule all:
         expand("deduplicated_bams/{sample}_tx.bam", sample = samples),
         expand("counts/{sample}.CDScounts_per_barcode.tsv", sample = samples),
         prep_scCoverage(),
+        count_codons(),
         "QC/multiqc_report.html"
 
 

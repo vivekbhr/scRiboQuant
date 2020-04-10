@@ -162,7 +162,20 @@ def parse_args(defaults=None):
 
     parser.add_argument("-nc", "--nCellsCoverage",
                           dest="nCellsCoverage",
+                          type=int,
                           help="No. of barcodes (from the barcode list) for which to prepare single-cell coverage (bigwig) files (default: '%(default)s')",
+                          default=0)
+
+    parser.add_argument("-cd", "--countCodons",
+                          dest="countCodons",
+                          action = "store_true",
+                          help="Produce per-gene per-codon counts in single-cells (default: '%(default)s')",
+                          default=False)
+
+    parser.add_argument("-ro", "--readOffset",
+                          dest="offset",
+                          type=int,
+                          help="What offset to use (No. of bases left of 3'-read end) for creating coverage files and counting codons (default: '%(default)s')",
                           default=0)
 
     parser.add_argument("-s", "--snakemakeOptions",

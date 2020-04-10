@@ -138,19 +138,26 @@ rule count_regions_cells:
         --per-cell --method=directional -I {input.bam} -S {output} \
         -v 4 --log2stderr --log={log.out} 2> {log.err}"
 #        --cell-tag=CB --umi-tag=UB --extract-umi-method=tag \
-
-rule count_codons_cells:
-    input:
-        bam = "deduplicated_bams/{sample}_tx.bam",
-        bai = "deduplicated_bams/{sample}_tx.bam.bai",
-        bed = "annotation/selected_CDS_annotation.bed"
-    output:
-        tsv = "counts/{sample}.codonCounts_per_barcode.tsv"
-    params:
-        rscript = os.path.join(workflow.basedir, "tools", "countCodons.R")
-    log:
-        out="logs/codonCounts_{sample}.log"
-    threads: 1
-    conda: CONDA_SHARED_ENV
-    shell:
-        "Rscript {params.rscript} {input.bam} {output.bed} {output.tsv} > {log} 2>&1"
+if counts_codons:
+    rule count_codons_cells:
+        input:
+            bed = "annotation/selected_CDS_annotation.bed",
+            fasta = "annotation/selected_CDS_extended.fa",
+            bc = barcodes,
+            bam = "deduplicated_bams/{sample}_tx.bam",
+            bai = "deduplicated_bams/{sample}_tx.bam.bai"
+        output:
+            tsv = "counts/{sample}_counts.Mtx",
+            rownames = "counts/{sample}_rownames.tsv",
+            colnames = "counts/{sample}_barcodes.txt"
+        params:
+            rscript = os.path.join(workflow.basedir, "tools", "countCodons.R"),
+            offset = offset,
+            prefix = "counts/{sample}"
+        log:
+            out="logs/codonCounts_{sample}.log"
+        threads: 15
+        conda: CONDA_SHARED_ENV
+        shell:
+            "Rscript {params.rscript} {input.bed} {output.fa} {input.bam} {input.bc} \
+            {params.offset} {threads} {params.prefix} > {log} 2>&1"

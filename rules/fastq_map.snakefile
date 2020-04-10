@@ -126,14 +126,6 @@ rule STARsolo:
         rm -rf $MYTEMP
         """
 
-
-## old params
-        ##--sjdbGTFfile {input.gtf} \
-          #--soloUMIdedup Exact \
-          #--soloUMIfiltering MultiGeneUMI \
-          #--quantMode TranscriptomeSAM \
-          #--quantTranscriptomeBan Singleend
-
 rule idxBamSTAR:
     input: "STAR/{sample}.sorted.bam"
     output: "STAR/{sample}.sorted.bam.bai"
@@ -149,11 +141,12 @@ rule bamCoverage:
     params:
         ignore = "chrX chrY chrM",
         norm = '--normalizeUsing CPM',
+        offset = offset
     log: "logs/bamCoverage.{sample}.log"
     threads: 10
     conda: CONDA_SHARED_ENV
     shell:
-        "bamCoverage -bs 1 --Offset -12 {params.norm} \
+        "bamCoverage -bs 1 --Offset -{params.offset} {params.norm} \
         --minMappingQuality 255 -p {threads} \
         -ignore {params.ignore}  \
         -b {input.bam} -o {output} > {log} 2>&1"
