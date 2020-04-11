@@ -7,7 +7,7 @@ library(magrittr)
 library(Matrix)
 library(BiocParallel)
 
-oArgs <- commandArgs(trailingOnly = T)
+Args <- commandArgs(trailingOnly = T)
 cds <- Args[1] #"annotation/selected_CDS_annotation.bed" #  #
 fa <- Args[2] #"annotation/selected_CDS_extended.fa"#
 bam <- Args[3] #"dedup/RPFv4-HEK293T-Starv1_S3.dedup.bam"#
