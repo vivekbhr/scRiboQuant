@@ -157,7 +157,7 @@ if counts_codons:
         log:
             out="logs/codonCounts_{sample}.log"
         threads: 15
-        conda: CONDA_SHARED_ENV
+        conda: CONDA_R_ENV
         shell:
             "Rscript {params.rscript} {input.bed} {input.fasta} {input.bam} {input.bc} \
             {params.offset} {threads} {params.prefix} > {log} 2>&1"

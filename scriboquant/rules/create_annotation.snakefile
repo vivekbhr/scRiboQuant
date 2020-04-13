@@ -62,7 +62,7 @@ rule prepCDSbed:
         rscript = os.path.join(workflow.basedir, "tools", "prepareCDS.R")
     log: "logs/prepCDSbed.log"
     threads: 1
-    conda: CONDA_SHARED_ENV
+    conda: CONDA_R_ENV
     shell:
         "Rscript {params.rscript} {input} {output.bed} {output.annot} {output.exons} > {log} 2>&1"
 

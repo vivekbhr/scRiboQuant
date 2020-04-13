@@ -1,0 +1,15 @@
+name: r
+channels:
+  - bioconda
+  - r
+  - defaults
+dependencies:
+ - r-base
+ - r-magrittr
+ - r-plyr
+ - r-ggplot2
+ - r-matrix
+ - bioconductor-genomicfeatures
+ - bioconductor-genomicalignments
+ - bioconductor-biocparallel
+ - bioconductor-rtracklayer
