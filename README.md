@@ -1,5 +1,5 @@
-# openTAPS
-Workflow for single-cell TAPS analysis
+# scRiboQuant
+Workflow for single-cell ribo-seq analysis
 
 
 **Author: @vivekbhr**
@@ -11,43 +11,41 @@ Workflow for single-cell TAPS analysis
 
 ## How to run
 
-### 1. Clone the repo
+### 1. Install via conda
+
+Create a new environment and install the workflow in the environment. (recommended)
 
 ```
-git clone https://github.com/vivekbhr/openTAPS.git
+conda create -n riboseq -c bioconda -c vivekbhr scriboquant
 ```
 
-### 2. Go to the cloned directory and set up conda env for the workflow
+Alternative: Install the workflow directly in your base environment.
 
 ```
-cd openTAPS
-conda env create -f env.yaml -n taps
+conda install -c bioconda -c vivekbhr scriboquant
 ```
 
-### 3. configure the config.yaml
 
-The workflow needs
-1) path to the (indexed) genome fasta file
-2) path to BWA index (basename)
-3) path to taps cell barcodes (.txt file)
-4) path to blacklisted regions in the genome (bed file)
-5) Name of "method", ('chic', 'chic-taps' or 'nla-taps')
+### 2. configure the config.yaml
 
-Copy the `config.yaml` from the folder to your output folder (where you intend to run the pipeline) and replace the information with your relevant information.
+config.yaml file is needed to provide files and arguments on the workflow that you don't want to repeat everytime you run the workflow, such as path to fasta and gtf files. Copy the `config.yaml` file from [here](./scriboquant/config.yaml) and modify as per your own requirements.
 
-### 4. Test workflow with test fasta.
+Files needed (provide in the config):
+
+1) Path to the (indexed) genome fasta file
+2) (optional) Path to bed file to mask certain regions in the genome and fasta files to append certain regions.
+3) Cell barcodes (.txt/tsv file, first column must be cell-barcodes, no header)
+
+### 4. Test the workflow with the provided files
 
 This should only take 3-4 minutes. Copy the test fastq files provided with the repo (testdata) folder and run the workflow like this:
 
 (provided all files in `config.yaml` are accessible)
 
 ```
-conda activate taps
-## for outsiders:
-<openTAPS_folder>/openTAPS -i <testdata_folder> -o <output_folder> -c <your_config.yaml> -j <jobs> -cl
-## for van Oudenaarden group:
-mkdir testresults && cd testresults
-.././openTAPS -i ../testdata -o . -c ../config.yaml -j 10 -cl
+conda activate riboseq
+
+scRiboQuant -i <testdata_folder> -o <output_folder> -c <your_config.yaml> -j <jobs> -cl
 ```
 
 
