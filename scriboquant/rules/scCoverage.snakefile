@@ -11,7 +11,7 @@ rule split_bam:
     wildcard_constraints:
         barcode="[ATGCN]*"
     threads: 1
-    conda: CONDA_SHARED_ENV
+    #conda: CONDA_SHARED_ENV
     shell:
         "samtools view -h -b -q {params.mapq} {input.bam} | \
         bamtools split -in - -tag CB -tagPrefix '' -stub {params.outprefix}"
@@ -22,7 +22,7 @@ rule idx_split_bam:
     wildcard_constraints:
         barcode="[ATGCN]*"
     threads: 1
-    conda: CONDA_SHARED_ENV
+    #conda: CONDA_SHARED_ENV
     shell:
         "samtools index {input}"
 
@@ -40,7 +40,7 @@ rule bamCoverage_sc:
         offset = offset
     log: "logs/bamCoverage.{sample}_{barcode}.log"
     threads: 4
-    conda: CONDA_SHARED_ENV
+    #conda: CONDA_SHARED_ENV
     shell:
         "bamCoverage -bs 1 --Offset {params.offset} {params.norm} \
         --minMappingQuality 255 -p {threads} \

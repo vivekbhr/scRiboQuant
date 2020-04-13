@@ -16,6 +16,6 @@ rule multiQC:
         star = "STAR"
     log: "logs/multiqc.out"
     threads: 1
-    conda: CONDA_SHARED_ENV
+    #conda: CONDA_SHARED_ENV
     shell:
         "multiqc -f -o {params.outdir} {params.outdir} {params.logdir} {params.star} > {log} 2>&1"
