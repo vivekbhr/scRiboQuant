@@ -1,5 +1,5 @@
 ## generate genome
-if maskfasta is not None and appendFasta is not None:
+if mask_bed is not None and append_fasta is not None:
     rule maskFasta:
         input:
             fa = genome_fasta,
