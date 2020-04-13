@@ -72,8 +72,8 @@ rule umi_dedup:
         """
 
 rule idxBamDedup:
-    input: "deduplicated_bams/{sample}.dedup.bam"
-    output: "deduplicated_bams/{sample}.dedup.bam.bai"
+    input: "deduplicated_bams/{sample}_tx.bam"
+    output: "deduplicated_bams/{sample}_tx.bam.bai"
     threads: 1
     conda: CONDA_SHARED_ENV
     shell: "samtools index {input}"
@@ -89,8 +89,8 @@ rule prep_saf:
 
 rule count_regions:
     input:
-        bam = "Bowtie2_CDS/{sample}.bam",
-        idx = "Bowtie2_CDS/{sample}.bam.bai",
+        bam = "deduplicated_bams/{sample}.bam",
+        idx = "deduplicated_bams/{sample}.bam.bai",
         saf = "CDS.saf"
     output:
         counts = "counts/{sample}.CDScounts_bulk.tsv",
