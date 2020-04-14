@@ -1,8 +1,7 @@
 name: r
 channels:
-  - bioconda
   - r
-  - defaults
+  - bioconda
 dependencies:
  - r-base
  - r-magrittr

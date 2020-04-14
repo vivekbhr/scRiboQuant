@@ -21,7 +21,7 @@ rule CDSmap:
     input:
         fq = "STAR/{sample}_tx.fastq",
         index = "annotation/Bowtie2index/selected_CDS_extended.rev.2.bt2"
-    output: temp("deduplicated_bams/{sample}.bam")
+    output: temp("tx_bams/{sample}.bam")
     params:
         idx = "annotation/Bowtie2index/selected_CDS_extended",
         tmpfile = tempDir+"/{sample}"
@@ -35,7 +35,7 @@ rule CDSmap:
         """
 
 rule idxBamBowtie:
-    input: "deduplicated_bams/{sample}.bam"
+    input: "tx_bams/{sample}.bam"
     output: temp("deduplicated_bams/{sample}.bam.bai")
     threads: 1
     conda: CONDA_SHARED_ENV
@@ -43,8 +43,8 @@ rule idxBamBowtie:
 
 rule umi_dedup:
     input:
-        bam = "deduplicated_bams/{sample}.bam",
-        idx = "deduplicated_bams/{sample}.bam.bai"
+        bam = "tx_bams/{sample}.bam",
+        idx = "tx_bams/{sample}.bam.bai"
     output:
         bam = "deduplicated_bams/{sample}_tx.bam",
         stats = "QC/umi_dedup/{sample}_per_umi.tsv"
@@ -89,8 +89,8 @@ rule prep_saf:
 
 rule count_regions:
     input:
-        bam = "deduplicated_bams/{sample}.bam",
-        idx = "deduplicated_bams/{sample}.bam.bai",
+        bam = "tx_bams/{sample}.bam",
+        idx = "tx_bams/{sample}.bam.bai",
         saf = "CDS.saf"
     output:
         counts = "counts/{sample}.CDScounts_bulk.tsv",
