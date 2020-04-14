@@ -50,16 +50,16 @@ Files needed (provide in the config):
 2) (optional) Path to bed file to mask certain regions in the genome and fasta files to append certain regions.
 3) Cell barcodes (.txt/tsv file, first column must be cell-barcodes, no header)
 
-### 4. Test the workflow with the provided files
+### 4. Test the workflow
 
-This should only take 3-4 minutes. Copy the test fastq files provided with the repo (testdata) folder and run the workflow like this:
+in order to test the workflow we can do a run on the real dataset, but with `--downsample <n_reads> ` command.
 
-(provided all files in `config.yaml` are accessible)
+For example, to run the workflow on 1000 downsamples reads (provided all files in `config.yaml` are accessible)
 
 ```
 conda activate riboseq
 
-scRiboQuant -i <testdata_folder> -o <output_folder> -c <your_config.yaml> -j <jobs> -cl
+scRiboQuant -i <testdata_folder> --downsample 1000 -o . -c <your_config.yaml> -j <jobs> -cl
 ```
 
 here **j** is the number of parallel jobs you want to run, **-cl** means submit to cluster (default is to run locally)
