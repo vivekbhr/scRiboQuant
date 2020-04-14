@@ -6,7 +6,7 @@ if mask_bed is not None and append_fasta is not None:
             bed = mask_bed
         output: temp("annotation/genome_masked.fa")
         threads: 1
-        #conda: CONDA_SHARED_ENV
+        conda: CONDA_SHARED_ENV
         shell:
             "bedtools maskfasta -fi {input.fa} -fo {output} -bed {input.bed}"
 
@@ -16,7 +16,7 @@ if mask_bed is not None and append_fasta is not None:
             addfa = append_fasta
         output: "annotation/genome.fa"
         threads: 1
-        #conda: CONDA_SHARED_ENV
+        conda: CONDA_SHARED_ENV
         shell:
             "cat {input.fa} {input.addfa} > {output}"
 else:
@@ -25,7 +25,7 @@ else:
             fa = genome_fasta
         output: "annotation/genome.fa"
         threads: 1
-        #conda: CONDA_SHARED_ENV
+        conda: CONDA_SHARED_ENV
         shell:
             "ln -s {input} {output}"
 
@@ -34,7 +34,7 @@ rule gtfTable:
     input: genome_gtf
     output: "annotation/gtf_annotation_table.txt"
     threads: 1
-    #conda: CONDA_SHARED_ENV
+    conda: CONDA_SHARED_ENV
     shell:
         """
         cat {input} | tr -d ";\\""| awk '$3=="gene" {{ print $10, $14, $1, $12 }}' | \
@@ -45,7 +45,7 @@ rule filterGTF:
     input: genome_gtf
     output: temp("annotation/transcripts_filtered.gtf")
     threads: 1
-    #conda: CONDA_SHARED_ENV
+    conda: CONDA_SHARED_ENV
     shell:
         """
         awk '$2 == "HAVANA" {{ print $0 }}' {input} | \
@@ -62,7 +62,7 @@ rule prepCDSbed:
         rscript = os.path.join(workflow.basedir, "tools", "prepareCDS.R")
     log: "logs/prepCDSbed.log"
     threads: 1
-    #conda: CONDA_SHARED_ENV
+    conda: CONDA_R_ENV
     shell:
         "Rscript {params.rscript} {input} {output.bed} {output.annot} {output.exons} > {log} 2>&1"
 
@@ -75,7 +75,7 @@ rule prepCDSfasta:
         extend = 51 #CDSextendLength
     log: "logs/prepCDSfasta.log"
     threads: 1
-    #conda: CONDA_SHARED_ENV
+    conda: CONDA_SHARED_ENV
     shell:
         "gffread -P -J -M -W -E -T --w-add {params.extend} -w {output} \
         -g {input.fasta} --in-bed {input.bed} > {log} 2>&1"
@@ -92,7 +92,7 @@ rule STARindex:
         outdir = "annotation/STARindex"
     log: "logs/STARindex.log"
     threads: 10
-    #conda: CONDA_SHARED_ENV
+    conda: CONDA_SHARED_ENV
     shell:
         "STAR --runThreadN {threads} \
         --runMode genomeGenerate \
@@ -110,7 +110,7 @@ rule Bowtie2index:
         outdir = "annotation/Bowtie2index/selected_CDS_extended"
     log: "logs/Bowtie2index.log"
     threads: 5
-    #conda: CONDA_SHARED_ENV
+    conda: CONDA_SHARED_ENV
     shell:
         "bowtie2-build --seed 2020 --threads {threads} \
         {input} {params.outdir} > {log} 2>&1"

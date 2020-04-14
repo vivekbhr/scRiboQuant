@@ -7,7 +7,7 @@ rule BamFilter:
         mapq = 255
     log: "logs/BamFilter_{sample}.log"
     threads: 5
-    #conda: CONDA_SHARED_ENV
+    conda: CONDA_SHARED_ENV
     shell:
         """
         samtools view -h -q {params.mapq} -F 4 -L {input.bed} {input.bam} 2> {log} | \
@@ -27,7 +27,7 @@ rule CDSmap:
         tmpfile = tempDir+"/{sample}"
     log: "logs/bowtie2_CDS.{sample}.log"
     threads: 10
-    #conda: CONDA_SHARED_ENV
+    conda: CONDA_SHARED_ENV
     shell:
         """
         bowtie2 --end-to-end -p {threads} -x {params.idx} -U {input.fq} 2> {log} | \
@@ -38,7 +38,7 @@ rule idxBamBowtie:
     input: "deduplicated_bams/{sample}.bam"
     output: temp("deduplicated_bams/{sample}.bam.bai")
     threads: 1
-    #conda: CONDA_SHARED_ENV
+    conda: CONDA_SHARED_ENV
     shell: "samtools index {input}"
 
 rule umi_dedup:
@@ -56,7 +56,7 @@ rule umi_dedup:
         out = "logs/umi_dedup_{sample}.out",
         err = "logs/umi_dedup_{sample}.err"
     threads: 1
-    #conda: CONDA_SHARED_ENV
+    conda: CONDA_SHARED_ENV
     shell:
         """
         umi_tools dedup --mapping-quality {params.mapq} \
@@ -75,14 +75,14 @@ rule idxBamDedup:
     input: "deduplicated_bams/{sample}_tx.bam"
     output: "deduplicated_bams/{sample}_tx.bam.bai"
     threads: 1
-    #conda: CONDA_SHARED_ENV
+    conda: CONDA_SHARED_ENV
     shell: "samtools index {input}"
 
 rule prep_saf:
     input: "annotation/selected_CDS_annotation.bed"
     output: temp("CDS.saf")
     threads: 1
-    #conda: CONDA_SHARED_ENV
+    conda: CONDA_SHARED_ENV
     shell: """
         awk 'OFS="\\t" {{ print $4, $1, $2, $3, $6 }}' {input} > {output}
         """
@@ -99,7 +99,7 @@ rule count_regions:
         filetype = "-F SAF"
     log: "logs/featurecounts_{sample}_bulk.err"
     threads: 10
-    #conda: CONDA_SHARED_ENV
+    conda: CONDA_SHARED_ENV
     shell:
         "featureCounts -T {threads} -a {input.saf} {params.filetype} \
         -R BAM -s 1 --read2pos 3 -o {output.counts} {input.bam} > {log} 2>&1"
@@ -108,7 +108,7 @@ rule fcount_sort:
     input: "counts/{sample}.bam.featureCounts.bam"
     output: temp("counts/{sample}.featureCounts.bam")
     threads: 10
-    #conda: CONDA_SHARED_ENV
+    conda: CONDA_SHARED_ENV
     shell:
         "samtools sort -@ {threads} -O BAM -o {output} {input}"
 
@@ -116,7 +116,7 @@ rule fcount_index:
     input: "counts/{sample}.featureCounts.bam"
     output: temp("counts/{sample}.featureCounts.bam.bai")
     threads: 1
-    #conda: CONDA_SHARED_ENV
+    conda: CONDA_SHARED_ENV
     shell:
         "samtools index {input}"
 
@@ -131,7 +131,7 @@ rule count_regions_cells:
         out="logs/umi_counts_{sample}.CDScounts.out",
         err="logs/umi_counts_{sample}.CDScounts.err"
     threads: 1
-    #conda: CONDA_SHARED_ENV
+    conda: CONDA_SHARED_ENV
     shell:
         "umi_tools count --umi-separator '_' --mapping-quality {params.mapq} \
         --per-gene --gene-tag=XT \
@@ -157,7 +157,7 @@ if counts_codons:
         log:
             out="logs/codonCounts_{sample}.log"
         threads: 15
-        #conda: CONDA_SHARED_ENV
+        conda: CONDA_R_ENV
         shell:
             "Rscript {params.rscript} {input.bed} {input.fasta} {input.bam} {input.bc} \
             {params.offset} {threads} {params.prefix} > {log} 2>&1"
