@@ -36,7 +36,7 @@ rule CDSmap:
 
 rule idxBamBowtie:
     input: "tx_bams/{sample}.bam"
-    output: temp("deduplicated_bams/{sample}.bam.bai")
+    output: temp("tx_bams/{sample}.bam.bai")
     threads: 1
     conda: CONDA_SHARED_ENV
     shell: "samtools index {input}"

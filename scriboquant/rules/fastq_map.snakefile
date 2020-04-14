@@ -7,7 +7,7 @@ if downsample is None:
         output:
             r1 = "FASTQ/{sample}_R1.fastq.gz",
             r2 = "FASTQ/{sample}_R2.fastq.gz"
-        #conda: CONDA_SHARED_ENV
+        conda: CONDA_SHARED_ENV
         shell:
           """
           ( [ -f {output.r1} ] || ln -s -r {input.r1} {output.r1} )
@@ -24,7 +24,7 @@ else:
         params:
             num_reads = downsample
         threads: 10
-        #conda: CONDA_SHARED_ENV
+        conda: CONDA_SHARED_ENV
         shell:
           """
           seqtk sample -s 100 {input.r1} {params.num_reads} | pigz -p {threads} -9 > {output.r1}
@@ -53,7 +53,7 @@ rule cutadapt:
         R2 = "FASTQ/trimmed/{sample}_trimmed_R2.fastq.gz"
     log: "logs/cutadapt.{sample}.out"
     threads: 8
-    #conda: CONDA_SHARED_ENV
+    conda: CONDA_SHARED_ENV
     shell:
         "cutadapt -j {threads} --minimum-length 18 --maximum-length 50 \
         -e 0.1 -q 20 -O 3 --trim-n -a TGGAATTCTCGG \
@@ -71,7 +71,7 @@ rule FastQC:
         tmp = tempDir
     log: "logs/FastQC.{sample}.out"
     threads: 2
-    #conda: CONDA_SHARED_ENV
+    conda: CONDA_SHARED_ENV
     shell:
         "fastqc -d {params.tmp} -t {threads} -o {params.outdir} \
         {input.untrimmed} {input.trimmed} > {log} 2>&1"
@@ -92,7 +92,7 @@ rule STARsolo:
         sample_dir = "STAR/{sample}"
     log: "logs/STAR.{sample}.log"
     threads: 10
-    #conda: CONDA_SHARED_ENV
+    conda: CONDA_SHARED_ENV
     shell:
         """
         ## set
@@ -130,7 +130,7 @@ rule idxBamSTAR:
     input: "STAR/{sample}.sorted.bam"
     output: "STAR/{sample}.sorted.bam.bai"
     threads: 1
-    #conda: CONDA_SHARED_ENV
+    conda: CONDA_SHARED_ENV
     shell: "samtools index {input}"
 
 rule bamCoverage:
@@ -144,7 +144,7 @@ rule bamCoverage:
         offset = offset
     log: "logs/bamCoverage.{sample}.log"
     threads: 10
-    #conda: CONDA_SHARED_ENV
+    conda: CONDA_SHARED_ENV
     shell:
         "bamCoverage -bs 1 --Offset {params.offset} {params.norm} \
         --minMappingQuality 255 -p {threads} \
