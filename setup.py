@@ -3,13 +3,14 @@ from setuptools import setup, find_packages
 from glob import glob
 import os.path
 
-
+# Set __version__
+exec(open('scriboquant/__init__.py').read())
 scripts = ['bin/scRiboQuant']
 requires = open("requirements.txt").read().strip().split("\n")
 
 setup(
     name='scRiboQuant',
-    version='0.1',
+    version=__version__,
     scripts=scripts,
     packages=find_packages(),
     include_package_data=True,

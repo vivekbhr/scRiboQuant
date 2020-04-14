@@ -21,7 +21,7 @@ rule CDSmap:
     input:
         fq = "STAR/{sample}_tx.fastq",
         index = "annotation/Bowtie2index/selected_CDS_extended.rev.2.bt2"
-    output: temp("deduplicated_bams/{sample}.bam")
+    output: temp("tx_bams/{sample}.bam")
     params:
         idx = "annotation/Bowtie2index/selected_CDS_extended",
         tmpfile = tempDir+"/{sample}"
@@ -35,16 +35,16 @@ rule CDSmap:
         """
 
 rule idxBamBowtie:
-    input: "deduplicated_bams/{sample}.bam"
-    output: temp("deduplicated_bams/{sample}.bam.bai")
+    input: "tx_bams/{sample}.bam"
+    output: temp("tx_bams/{sample}.bam.bai")
     threads: 1
     conda: CONDA_SHARED_ENV
     shell: "samtools index {input}"
 
 rule umi_dedup:
     input:
-        bam = "deduplicated_bams/{sample}.bam",
-        idx = "deduplicated_bams/{sample}.bam.bai"
+        bam = "tx_bams/{sample}.bam",
+        idx = "tx_bams/{sample}.bam.bai"
     output:
         bam = "deduplicated_bams/{sample}_tx.bam",
         stats = "QC/umi_dedup/{sample}_per_umi.tsv"
@@ -72,8 +72,8 @@ rule umi_dedup:
         """
 
 rule idxBamDedup:
-    input: "deduplicated_bams/{sample}.dedup.bam"
-    output: "deduplicated_bams/{sample}.dedup.bam.bai"
+    input: "deduplicated_bams/{sample}_tx.bam"
+    output: "deduplicated_bams/{sample}_tx.bam.bai"
     threads: 1
     conda: CONDA_SHARED_ENV
     shell: "samtools index {input}"
@@ -89,8 +89,8 @@ rule prep_saf:
 
 rule count_regions:
     input:
-        bam = "Bowtie2_CDS/{sample}.bam",
-        idx = "Bowtie2_CDS/{sample}.bam.bai",
+        bam = "tx_bams/{sample}.bam",
+        idx = "tx_bams/{sample}.bam.bai",
         saf = "CDS.saf"
     output:
         counts = "counts/{sample}.CDScounts_bulk.tsv",
@@ -138,19 +138,26 @@ rule count_regions_cells:
         --per-cell --method=directional -I {input.bam} -S {output} \
         -v 4 --log2stderr --log={log.out} 2> {log.err}"
 #        --cell-tag=CB --umi-tag=UB --extract-umi-method=tag \
-
-rule count_codons_cells:
-    input:
-        bam = "deduplicated_bams/{sample}_tx.bam",
-        bai = "deduplicated_bams/{sample}_tx.bam.bai",
-        bed = "annotation/selected_CDS_annotation.bed"
-    output:
-        tsv = "counts/{sample}.codonCounts_per_barcode.tsv"
-    params:
-        rscript = os.path.join(workflow.basedir, "tools", "countCodons.R")
-    log:
-        out="logs/codonCounts_{sample}.log"
-    threads: 1
-    conda: CONDA_SHARED_ENV
-    shell:
-        "Rscript {params.rscript} {input.bam} {output.bed} {output.tsv} > {log} 2>&1"
+if counts_codons:
+    rule count_codons_cells:
+        input:
+            bed = "annotation/selected_CDS_annotation.bed",
+            fasta = "annotation/selected_CDS_extended.fa",
+            bc = barcodes,
+            bam = "deduplicated_bams/{sample}_tx.bam",
+            bai = "deduplicated_bams/{sample}_tx.bam.bai"
+        output:
+            tsv = "counts/{sample}_counts.Mtx",
+            rownames = "counts/{sample}_rownames.tsv",
+            colnames = "counts/{sample}_barcodes.txt"
+        params:
+            rscript = os.path.join(workflow.basedir, "tools", "countCodons.R"),
+            offset = offset,
+            prefix = "counts/{sample}"
+        log:
+            out="logs/codonCounts_{sample}.log"
+        threads: 15
+        conda: CONDA_R_ENV
+        shell:
+            "Rscript {params.rscript} {input.bed} {input.fasta} {input.bam} {input.bc} \
+            {params.offset} {threads} {params.prefix} > {log} 2>&1"

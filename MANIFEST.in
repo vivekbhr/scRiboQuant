@@ -1,0 +1,4 @@
+include scriboquant/*.yaml
+include scriboquant/Snakefile
+recursive-include scriboquant/rules *
+recursive-include scriboquant/tools *

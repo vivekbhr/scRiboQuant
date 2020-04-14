@@ -7,15 +7,20 @@ library(magrittr)
 library(Matrix)
 library(BiocParallel)
 
-oArgs <- commandArgs(trailingOnly = T)
+Args <- commandArgs(trailingOnly = T)
 cds <- Args[1] #"annotation/selected_CDS_annotation.bed" #  #
 fa <- Args[2] #"annotation/selected_CDS_extended.fa"#
 bam <- Args[3] #"dedup/RPFv4-HEK293T-Starv1_S3.dedup.bam"#
 barcodes <- Args[4] #"barcodeInfo.tsv" #
-offset <- Args[5]
+offset <- as.numeric(Args[5])
 cores <- Args[6]
 outPrefix <- Args[7]
 
+if(offset < 0) {
+  fix = "end"
+} else {
+  fix = "start"
+}
 # register cores
 register(MulticoreParam(workers=cores))
 
@@ -25,7 +30,7 @@ fa2 <- readDNAStringSet(fa)
 barcodes <- read.delim(barcodes, header = F, stringsAsFactors = F)$V1
 
 ### ------ Functions --------------- ####
-ResizeReads <- function(reads, width = 1, fix = "start", trimlength = offset) {
+ResizeReads <- function(reads, width = 1, fix = fix, trimlength = offset) {
   reads <- as(reads, "GRanges")
   stopifnot(all(GenomicRanges::strand(reads) != "*"))
   #GenomicRanges::resize(reads, width = width, fix = fix)

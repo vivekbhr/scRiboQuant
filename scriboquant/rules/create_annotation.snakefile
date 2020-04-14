@@ -1,23 +1,33 @@
 ## generate genome
-rule maskFasta:
-    input:
-        fa = genome_fasta,
-        bed = mask_bed
-    output: temp("annotation/genome_masked.fa")
-    threads: 1
-    conda: CONDA_SHARED_ENV
-    shell:
-        "bedtools maskfasta -fi {input.fa} -fo {output} -bed {input.bed}"
+if mask_bed is not None and append_fasta is not None:
+    rule maskFasta:
+        input:
+            fa = genome_fasta,
+            bed = mask_bed
+        output: temp("annotation/genome_masked.fa")
+        threads: 1
+        conda: CONDA_SHARED_ENV
+        shell:
+            "bedtools maskfasta -fi {input.fa} -fo {output} -bed {input.bed}"
 
-rule appendFasta:
-    input:
-        fa = "annotation/genome_masked.fa",
-        addfa = append_fasta
-    output: "annotation/genome.fa"
-    threads: 1
-    conda: CONDA_SHARED_ENV
-    shell:
-        "cat {input.fa} {input.addfa} > {output}"
+    rule appendFasta:
+        input:
+            fa = "annotation/genome_masked.fa",
+            addfa = append_fasta
+        output: "annotation/genome.fa"
+        threads: 1
+        conda: CONDA_SHARED_ENV
+        shell:
+            "cat {input.fa} {input.addfa} > {output}"
+else:
+    rule linkFasta:
+        input:
+            fa = genome_fasta
+        output: "annotation/genome.fa"
+        threads: 1
+        conda: CONDA_SHARED_ENV
+        shell:
+            "ln -s {input} {output}"
 
 ### prepare annotation
 rule gtfTable:
@@ -52,7 +62,7 @@ rule prepCDSbed:
         rscript = os.path.join(workflow.basedir, "tools", "prepareCDS.R")
     log: "logs/prepCDSbed.log"
     threads: 1
-    conda: CONDA_SHARED_ENV
+    conda: CONDA_R_ENV
     shell:
         "Rscript {params.rscript} {input} {output.bed} {output.annot} {output.exons} > {log} 2>&1"
 

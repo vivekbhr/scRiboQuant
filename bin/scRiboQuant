@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 
 __description__ = """
-single-cell Ribo-Seq analysis pipeline
-usage example:
-    scRiboQuant -i input-dir -o output-dir -c config.yaml mm10
+Single-Cell Ribo-Seq analysis pipeline
+
+Usage example:
+    scRiboQuant -i input-dir -o output-dir -c config.yaml
 """
 
 import argparse
@@ -12,6 +13,8 @@ import sys
 import textwrap
 import yaml
 import subprocess
+import scriboquant
+
 ### DEFINE FUNCTIONS TO LOAD AND RUN Workflow ###
 ########################################################
 
@@ -49,22 +52,22 @@ def commonYAMLandLogs(baseDir, args, callingScript):
     snakemake_cmd = """
                     TMPDIR={tempDir} PYTHONNOUSERSITE=True snakemake {snakemakeOptions} \
                     --directory {workingdir} --snakefile {snakefile} \
-                    --jobs {maxJobs} --configfile {configFile} --keep-going --latency-wait {latency_wait}
+                    --jobs {maxJobs} --configfile {configFile}  \
+                    --use-conda --conda-prefix {condadir} \
+                    --keep-going --latency-wait {latency_wait}
                     """.format(snakefile=os.path.join(baseDir, "Snakefile"),
                                maxJobs=args.maxJobs,
                                workingdir=args.outdir,
                                tempDir=args.tempDir,
+                               condadir=args.conda_dir,
                                latency_wait=cluster_config["latency_wait"],
-                               snakemakeOptions=str(args.snakemakeOptions or ''),
+                               snakemakeOptions=str(args.snakemakeOptions or ' '),
                                configFile=os.path.join(args.outdir, 'scRiboQuant_config.yaml')).split()
 
     if args.verbose:
         snakemake_cmd.append("--printshellcmds")
 
     if args.cluster:
-        ## always --use-conda on cluster
-        snakemake_cmd += ["--use-conda"]
-        snakemake_cmd += ["--conda-prefix " + args.conda_dir]
         snakemake_cmd += ["--cluster-config",
                           os.path.join(baseDir, "cluster_config.yaml"),
                           "--cluster", "'" + cluster_config["cluster_cmd"], "'"]
@@ -161,13 +164,26 @@ def parse_args(defaults=None):
 
     parser.add_argument("-nc", "--nCellsCoverage",
                           dest="nCellsCoverage",
+                          type=int,
                           help="No. of barcodes (from the barcode list) for which to prepare single-cell coverage (bigwig) files (default: '%(default)s')",
                           default=0)
+
+    parser.add_argument("-cc", "--countCodons",
+                          dest="counts_codons",
+                          action = "store_true",
+                          help="Produce per-gene per-codon counts in single-cells (default: '%(default)s')",
+                          default=False)
+
+    parser.add_argument("-ro", "--readOffset",
+                          dest="offset",
+                          type=int,
+                          help="Which (single-base) position within the read shall be used for creating coverage files and counting codons? (-X means X bases from 3'-end) (default: '%(default)s')",
+                          default='-12')
 
     parser.add_argument("-s", "--snakemakeOptions",
                           dest="snakemakeOptions",
                           metavar="STR",
-                          help="Options to pass on to snakemake",
+                          help="Options to pass on to snakemake. For example, -s ' -np' will perform a dry-run.",
                           type=str,
                           required=False,
                           default=None)
@@ -176,17 +192,17 @@ def parse_args(defaults=None):
                          dest="cluster",
                          action="store_true",
                          default=False,
-                         help="run workflow on the cluster (requires configuration of cluster_cmd in the config) (default: '%(default)s')")
+                         help="run workflow on the cluster (requires configuration of cluster_cmd in cluster_config.yaml) (default: '%(default)s')")
 
     parser.add_argument("-cd", "--conda-dir",
                          dest="conda_dir",
                          default=get_current_condaEnv(),
-                         help="path to the conda directory where scRiboQuant is installed (used only if --cluster is specified) (default: '%(default)s')")
+                         help="path to the conda directory where scRiboQuant packages are installed (default: '%(default)s')")
 
     parser.add_argument("-j", "--jobs",
                          dest="maxJobs",
                          metavar="INT",
-                         help="maximum number of concurrently submitted cluster jobs (cores if workflow is run locally) (default: '%(default)s')",
+                         help="maximum number of concurrently submitted cluster jobs (or threads if workflow is run locally) (default: '%(default)s')",
                          type=int,
                          default=10)
 
@@ -194,7 +210,7 @@ def parse_args(defaults=None):
                          action="help",
                          help="show this help message and exit")
 
-    parser.add_argument("--verbose",
+    parser.add_argument("-v", "--verbose",
                          action="store_true",
                          help="Enable verbose mode")
 
@@ -202,9 +218,8 @@ def parse_args(defaults=None):
 
 
 def main():
-    #baseDir, workflowDir, defaults = setDefaults(os.path.basename(__file__))
-    baseDir = os.path.dirname(__file__)
-
+    #baseDir = os.path.dirname(__file__)
+    baseDir = os.path.dirname(scriboquant.__file__)
     # get command line arguments
     parser = parse_args()
     args = parser.parse_args()
