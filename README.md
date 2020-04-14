@@ -25,6 +25,20 @@ Alternative: Install the workflow directly in your base environment.
 conda install -c bioconda -c vivekbhr scriboquant
 ```
 
+### 1b. (Alternative) Install via pip from github
+
+Create a new environment.
+
+```
+conda create -n riboseq python
+```
+Install the workflow from the master branch
+
+```
+conda activate riboseq
+pip install git+https://github.com/vivekbhr/scRiboQuant.git
+```
+
 
 ### 2. configure the config.yaml
 
@@ -48,15 +62,11 @@ conda activate riboseq
 scRiboQuant -i <testdata_folder> -o <output_folder> -c <your_config.yaml> -j <jobs> -cl
 ```
 
-
 here **j** is the number of parallel jobs you want to run, **-cl** means submit to cluster (default is to run locally)
+
+**dry run** : in order to just test what the workflow would do, use the command `-s ' -np' `
 
 ### Technical Notes
   - After running the pipeline, **LOG** file are stored in the **<output>/log/** directory and the workflow top-level log is in openTAPS.log file.
   - Currently the -o option is not very flexible and and pipeline works only when it's executed in the output directory.
-  - cluster configuration, such as memory and cluster submission command are placed in `cluster_config.yaml`, and can be modified to suite the users internal infrastructure.
-
-## Notes on processing
-  - Quality-trimming of the data seems to remove the NLA3 sequences from the 5'-end of R1, which leads to
-    rejection of reads during methylation tagging in the NLA-TAPS library. Turn 'trim: False' in the config.yaml to
-    turn off trimming for NLA-TAPS library
+  - cluster configuration, such as memory and cluster submission command are placed in [cluster_config.yaml](./scriboquant/cluster_config.yaml), and can be modified to suite the users internal infrastructure.
