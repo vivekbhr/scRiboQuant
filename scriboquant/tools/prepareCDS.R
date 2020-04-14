@@ -1,6 +1,7 @@
 #!/usr/bin/env Rscript
 
 suppressMessages(library(GenomicFeatures))
+library(rtracklayer)
 library(magrittr)
 ldply <- plyr::ldply
 
@@ -34,7 +35,7 @@ selectmax <- function(g) {
 
 ## prep lengths
 gtf = suppressWarnings(makeTxDbFromGFF(inGTF))
-#gtf <- rtracklayer::import.gff(inGTF)
+#gtf <- import.gff(inGTF)
 #gtf <- gtf[gtf$source == "HAVANA" &
 #             gtf$transcript_type == "protein_coding" &
 #             grepl("appris_principal", gtf$tag) ]
@@ -101,6 +102,6 @@ bed <- GRanges(seqnames = txwidths$tx, IRanges(52, txwidths$width2 - 51),
 strand(bed) <- "+"
 
 ## write outputs
-rtracklayer::export.bed15(finalCDS, CDSout)
-rtracklayer::export.bed(bed, con = BEDout)
-rtracklayer::export.bed(unlist(finalCDS), con = Exonsout)
+export.bed(finalCDS, CDSout)
+export.bed(bed, con = BEDout)
+export.bed(unlist(finalCDS), con = Exonsout)
