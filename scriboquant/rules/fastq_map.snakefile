@@ -76,13 +76,17 @@ rule FastQC:
         "fastqc -d {params.tmp} -t {threads} -o {params.outdir} \
         {input.untrimmed} {input.trimmed} > {log} 2>&1"
 
+rule whitelist:
+    input: barcodes
+    output: "annotation/whitelist.txt"
+    shell: "cut -f1 {input} > {output}"
 
 rule STARsolo:
     input:
         idx = "annotation/STARindex/Genome",
         r1 = "FASTQ/trimmed/{sample}_trimmed_R1.fastq.gz",
         r2 = "FASTQ/trimmed/{sample}_trimmed_R2.fastq.gz",
-        bc = barcodes
+        bc = "annotation/whitelist.txt"
     output:
         bam = "STAR/{sample}.sorted.bam",
         raw_counts = "STAR/{sample}/{sample}.Solo.out/Gene/raw/matrix.mtx"
