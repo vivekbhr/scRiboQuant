@@ -50,23 +50,35 @@ Files needed (provide in the config):
 2) (optional) Path to bed file to mask certain regions in the genome and fasta files to append certain regions.
 3) Cell barcodes (.txt/tsv file, first column must be cell-barcodes, no header)
 
-### 4. Test the workflow with the provided files
+### 3. Test the workflow
 
-This should only take 3-4 minutes. Copy the test fastq files provided with the repo (testdata) folder and run the workflow like this:
+in order to test the workflow we can do a run on the real dataset, but with `--downsample <n_reads> ` command.
 
-(provided all files in `config.yaml` are accessible)
+For example, to run the workflow on 1000 downsamples reads (provided all files in `config.yaml` are accessible)
 
 ```
 conda activate riboseq
 
-scRiboQuant -i <testdata_folder> -o <output_folder> -c <your_config.yaml> -j <jobs> -cl
+scRiboQuant -i <testdata_folder> --downsample 1000 -o . -c <your_config.yaml> -j <jobs> -cl
 ```
 
-here **j** is the number of parallel jobs you want to run, **-cl** means submit to cluster (default is to run locally)
+### 4. Submission parameters
 
-**dry run** : in order to just test what the workflow would do, use the command `-s ' -np' `
+#### Running on HPC Cluster
+  - In the workflow command above, **j** is the number of parallel jobs you want to run, **-cl** means submit to cluster (default is to run locally). Therefore if you wish to run the workflow on a cluster, simply use the workflow with the -cl command on the submission node.
 
-### Technical Notes
-  - After running the pipeline, **LOG** file are stored in the **<output>/log/** directory and the workflow top-level log is in openTAPS.log file.
-  - Currently the -o option is not very flexible and and pipeline works only when it's executed in the output directory.
   - cluster configuration, such as memory and cluster submission command are placed in [cluster_config.yaml](./scriboquant/cluster_config.yaml), and can be modified to suite the users internal infrastructure.
+
+#### Dry-run
+In order to just test what the workflow would do, use the command `-s ' -np' `
+
+
+### Other technical Notes
+
+  - After running the pipeline, **LOG** file are stored in the **<output>/log/** directory and the workflow top-level log is in scRiboQuant.log file.
+
+  - Currently the -o option is not very flexible and and pipeline works only when it's executed in the output directory.
+
+  - Use the -t argument to specify a local directory for temp files. Default is to use the /tmp/ folder, which might have low space on cluster (unless tmpspace is specified in cluster_config.yaml)
+
+  - **Manual interruption of the workflow**: Simple Ctrl+C is enough to cancel/inturrupt the workflow. However, in some cases re-running the workflow after inturruption might fail with message "Locked working directory". In that case, please run the workflow with `-s ' --unlock'` once.
