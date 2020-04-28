@@ -101,7 +101,10 @@ bed <- GRanges(seqnames = txwidths$tx, IRanges(52, txwidths$width2 - 51),
                name = paste0(txwidths$tx))
 strand(bed) <- "+"
 
+# select all exons from these transcripts from the gtf
+selExons <- exonsBy(gtf, "tx", use.names = T)[alltx$tx]
+
 ## write outputs
 export.bed(finalCDS, CDSout)
 export.bed(bed, con = BEDout)
-export.bed(unlist(finalCDS), con = Exonsout)
+export.bed(unlist(selExons), con = Exonsout)
