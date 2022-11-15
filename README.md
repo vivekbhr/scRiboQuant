@@ -7,11 +7,6 @@ Workflow for single-cell ribo-seq analysis
 [![DOI](https://zenodo.org/badge/248052517.svg)](https://zenodo.org/badge/latestdoi/248052517) Bhardwaj V. (2021) scRiBoQuant: Workflow for processing single-cell Ribo-seq data  
 
 
-## DAG (Directed Acyclic Graph) of the Workflow
-
-![DAG](./dag.png)
-
-
 ## How to run
 
 ### 1. Install via conda
@@ -85,3 +80,10 @@ In order to just test what the workflow would do, use the command `-s ' -np' `
   - Use the -t argument to specify a local directory for temp files. Default is to use the /tmp/ folder, which might have low space on cluster (unless tmpspace is specified in cluster_config.yaml)
 
   - **Manual interruption of the workflow**: Simple Ctrl+C is enough to cancel/inturrupt the workflow. However, in some cases re-running the workflow after inturruption might fail with message "Locked working directory". In that case, please run the workflow with `-s ' --unlock'` once.
+  
+  
+### DAG (Directed Acyclic Graph) of the Workflow
+
+![DAG](./dag.png)
+
+**Note: This workflow is provided as is and feature/bug issues would not be entertained as I am not a member of the scRiboSeq team.**
