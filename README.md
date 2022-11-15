@@ -84,6 +84,6 @@ In order to just test what the workflow would do, use the command `-s ' -np' `
   
 ### DAG (Directed Acyclic Graph) of the Workflow
 
-![DAG](./dag.png)
+<img src=./dag.png width=500 height=500>
 
 **Note: This workflow is provided as is and feature/bug issues would not be entertained as I am not a member of the scRiboSeq team. Please feel free to copy/modify it for your project with attribution**
