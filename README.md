@@ -4,7 +4,7 @@ Workflow for single-cell ribo-seq analysis
 
 **Author: @vivekbhr**
 
-Bhardwaj V. (2021) scRiBoQuant: Workflow for processing single-cell Ribo-seq data [![DOI](https://zenodo.org/badge/248052517.svg)](https://zenodo.org/badge/latestdoi/248052517) 
+[![DOI](https://zenodo.org/badge/248052517.svg)](https://zenodo.org/badge/latestdoi/248052517) Bhardwaj V. (2021) scRiBoQuant: Workflow for processing single-cell Ribo-seq data  
 
 
 ## DAG (Directed Acyclic Graph) of the Workflow
