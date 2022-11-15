@@ -86,4 +86,4 @@ In order to just test what the workflow would do, use the command `-s ' -np' `
 
 ![DAG](./dag.png)
 
-**Note: This workflow is provided as is and feature/bug issues would not be entertained as I am not a member of the scRiboSeq team.**
+**Note: This workflow is provided as is and feature/bug issues would not be entertained as I am not a member of the scRiboSeq team. Please feel free to copy/modify it for your project with attribution**
